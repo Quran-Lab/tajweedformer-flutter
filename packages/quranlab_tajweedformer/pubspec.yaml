@@ -1,0 +1,38 @@
+name: quranlab_tajweedformer
+description: >-
+  TajweedFormer V4 for Flutter on Android and iOS: Quranic recitation in, every output of the model out while the
+  learner recites, on the device. Wraps Quran Lab's native SDKs.
+version: 4.0.0
+homepage: https://sdk.quranlab.ai
+repository: https://github.com/Quran-Lab/tajweedformer-flutter
+issue_tracker: https://github.com/Quran-Lab/tajweedformer-flutter/issues
+documentation: https://sdk.quranlab.ai/docs/quickstart/flutter
+topics:
+  - quran
+  - speech-recognition
+  - audio
+  - machine-learning
+
+environment:
+  sdk: ^3.11.0
+  flutter: '>=3.41.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  meta: ^1.15.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  pigeon: 29.2.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: ai.quranlab.tajweedformer.flutter
+        pluginClass: TajweedFormerPlugin
+      ios:
+        pluginClass: TajweedFormerPlugin

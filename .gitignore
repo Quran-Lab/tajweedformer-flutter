@@ -1,0 +1,15 @@
+.DS_Store
+.dart_tool/
+.idea/
+*.iml
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+local.properties
+**/android/.gradle/
+**/ios/Flutter/ephemeral/
+**/ios/.symlinks/
+**/Pods/
+.swiftpm/
+pubspec.lock
+!packages/quranlab_tajweedformer/example/pubspec.lock

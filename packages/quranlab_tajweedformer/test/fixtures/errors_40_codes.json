@@ -1,0 +1,607 @@
+{
+ "from": "quranlab-contract sdk_4.0.0/vectors/errors_40.json at 1c971ab (the commit the Android and C SDKs pin); the `codes` cases and `codes_not_reported` only",
+ "format": "quranlab.errors-40/1",
+ "codes_not_reported": [
+  "invalid_argument",
+  "client_exists",
+  "session_open",
+  "session_closed",
+  "cancelled"
+ ],
+ "codes": [
+  {
+   "stage": "config",
+   "reason": "network",
+   "http_status": null,
+   "on_device": "none",
+   "error_code": null,
+   "code": "needs_connection",
+   "reported": true
+  },
+  {
+   "stage": "config",
+   "reason": "network",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "none",
+   "reported": false
+  },
+  {
+   "stage": "config",
+   "reason": "http",
+   "http_status": 503,
+   "on_device": "none",
+   "error_code": null,
+   "code": "download_failed",
+   "reported": true
+  },
+  {
+   "stage": "config",
+   "reason": "http",
+   "http_status": 503,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "none",
+   "reported": true
+  },
+  {
+   "stage": "config",
+   "reason": "signature",
+   "http_status": null,
+   "on_device": "none",
+   "error_code": null,
+   "code": "download_failed",
+   "reported": true
+  },
+  {
+   "stage": "config",
+   "reason": "expired",
+   "http_status": null,
+   "on_device": "none",
+   "error_code": null,
+   "code": "download_failed",
+   "reported": true
+  },
+  {
+   "stage": "config",
+   "reason": "unavailable",
+   "http_status": null,
+   "on_device": "none",
+   "error_code": null,
+   "code": "model_unavailable",
+   "reported": true
+  },
+  {
+   "stage": "config",
+   "reason": "refused",
+   "http_status": 403,
+   "on_device": "complete",
+   "error_code": "app_blocked",
+   "code": "server_rejected",
+   "reported": true
+  },
+  {
+   "stage": "config",
+   "reason": "refused",
+   "http_status": 401,
+   "on_device": "none",
+   "error_code": "key_revoked",
+   "code": "invalid_key",
+   "reported": true
+  },
+  {
+   "stage": "config",
+   "reason": "refused",
+   "http_status": 403,
+   "on_device": "none",
+   "error_code": "sdk_too_old",
+   "code": "sdk_too_old",
+   "reported": true
+  },
+  {
+   "stage": "register",
+   "reason": "http",
+   "http_status": 500,
+   "on_device": "none",
+   "error_code": null,
+   "code": "none",
+   "reported": true
+  },
+  {
+   "stage": "register",
+   "reason": "network",
+   "http_status": null,
+   "on_device": "none",
+   "error_code": null,
+   "code": "none",
+   "reported": false
+  },
+  {
+   "stage": "attest",
+   "reason": "attestation_failed",
+   "http_status": null,
+   "on_device": "none",
+   "error_code": null,
+   "code": "none",
+   "reported": true
+  },
+  {
+   "stage": "manifest",
+   "reason": "network",
+   "http_status": null,
+   "on_device": "none",
+   "error_code": null,
+   "code": "needs_connection",
+   "reported": true
+  },
+  {
+   "stage": "manifest",
+   "reason": "network",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "none",
+   "reported": false
+  },
+  {
+   "stage": "manifest",
+   "reason": "http",
+   "http_status": 502,
+   "on_device": "none",
+   "error_code": null,
+   "code": "download_failed",
+   "reported": true
+  },
+  {
+   "stage": "manifest",
+   "reason": "signature",
+   "http_status": null,
+   "on_device": "none",
+   "error_code": null,
+   "code": "signature_invalid",
+   "reported": true
+  },
+  {
+   "stage": "manifest",
+   "reason": "rate_limited",
+   "http_status": 429,
+   "on_device": "none",
+   "error_code": "model_limit",
+   "code": "download_failed",
+   "reported": true
+  },
+  {
+   "stage": "download",
+   "reason": "network",
+   "http_status": null,
+   "on_device": "none",
+   "error_code": null,
+   "code": "needs_connection",
+   "reported": true
+  },
+  {
+   "stage": "download",
+   "reason": "network",
+   "http_status": null,
+   "on_device": "partial",
+   "error_code": null,
+   "code": "download_failed",
+   "reported": true
+  },
+  {
+   "stage": "download",
+   "reason": "timeout",
+   "http_status": null,
+   "on_device": "partial",
+   "error_code": null,
+   "code": "download_failed",
+   "reported": true
+  },
+  {
+   "stage": "download",
+   "reason": "http",
+   "http_status": 503,
+   "on_device": "partial",
+   "error_code": null,
+   "code": "download_failed",
+   "reported": true
+  },
+  {
+   "stage": "download",
+   "reason": "invalid_answer",
+   "http_status": 200,
+   "on_device": "none",
+   "error_code": null,
+   "code": "download_failed",
+   "reported": true
+  },
+  {
+   "stage": "download",
+   "reason": "redirect",
+   "http_status": 302,
+   "on_device": "none",
+   "error_code": null,
+   "code": "download_failed",
+   "reported": true
+  },
+  {
+   "stage": "download",
+   "reason": "hash",
+   "http_status": null,
+   "on_device": "partial",
+   "error_code": null,
+   "code": "checksum_mismatch",
+   "reported": true
+  },
+  {
+   "stage": "download",
+   "reason": "quota",
+   "http_status": null,
+   "on_device": "partial",
+   "error_code": null,
+   "code": "storage_full",
+   "reported": true
+  },
+  {
+   "stage": "download",
+   "reason": "storage",
+   "http_status": null,
+   "on_device": "partial",
+   "error_code": null,
+   "code": "storage_failed",
+   "reported": true
+  },
+  {
+   "stage": "download",
+   "reason": "refused",
+   "http_status": 403,
+   "on_device": "none",
+   "error_code": "model_attestation_required",
+   "code": "server_rejected",
+   "reported": true
+  },
+  {
+   "stage": "verify",
+   "reason": "hash",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "checksum_mismatch",
+   "reported": true
+  },
+  {
+   "stage": "verify",
+   "reason": "record",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "none",
+   "reported": true
+  },
+  {
+   "stage": "storage",
+   "reason": "unavailable",
+   "http_status": null,
+   "on_device": "none",
+   "error_code": null,
+   "code": "none",
+   "reported": true
+  },
+  {
+   "stage": "storage",
+   "reason": "evicted",
+   "http_status": null,
+   "on_device": "none",
+   "error_code": null,
+   "code": "none",
+   "reported": true
+  },
+  {
+   "stage": "storage",
+   "reason": "quota",
+   "http_status": null,
+   "on_device": "none",
+   "error_code": null,
+   "code": "storage_full",
+   "reported": true
+  },
+  {
+   "stage": "storage",
+   "reason": "write",
+   "http_status": null,
+   "on_device": "none",
+   "error_code": null,
+   "code": "storage_failed",
+   "reported": true
+  },
+  {
+   "stage": "runtime",
+   "reason": "simd",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "runtime_unsupported",
+   "reported": true
+  },
+  {
+   "stage": "runtime",
+   "reason": "webcrypto",
+   "http_status": null,
+   "on_device": "none",
+   "error_code": null,
+   "code": "runtime_unsupported",
+   "reported": true
+  },
+  {
+   "stage": "runtime",
+   "reason": "memory",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "engine_failed",
+   "reported": true
+  },
+  {
+   "stage": "runtime",
+   "reason": "wasm_fetch",
+   "http_status": 404,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "engine_failed",
+   "reported": true
+  },
+  {
+   "stage": "runtime",
+   "reason": "wasm_compile",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "engine_failed",
+   "reported": true
+  },
+  {
+   "stage": "runtime",
+   "reason": "worker",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "none",
+   "reported": true
+  },
+  {
+   "stage": "model_open",
+   "reason": "memory",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "engine_failed",
+   "reported": true
+  },
+  {
+   "stage": "model_open",
+   "reason": "incompatible",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "model_incompatible",
+   "reported": true
+  },
+  {
+   "stage": "audio",
+   "reason": "permission_denied",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "microphone_denied",
+   "reported": true
+  },
+  {
+   "stage": "audio",
+   "reason": "context",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "microphone_unavailable",
+   "reported": true
+  },
+  {
+   "stage": "audio",
+   "reason": "interrupted",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "interrupted",
+   "reported": true
+  },
+  {
+   "stage": "session",
+   "reason": "deadline",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "engine_failed",
+   "reported": true
+  },
+  {
+   "stage": "sharing",
+   "reason": "refused",
+   "http_status": 403,
+   "on_device": "complete",
+   "error_code": "segment_cap",
+   "code": "none",
+   "reported": true
+  },
+  {
+   "stage": "sharing",
+   "reason": "network",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "none",
+   "reported": false
+  },
+  {
+   "stage": "events",
+   "reason": "http",
+   "http_status": 400,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "none",
+   "reported": true
+  },
+  {
+   "stage": "attest",
+   "reason": "network",
+   "http_status": null,
+   "on_device": "none",
+   "error_code": null,
+   "code": "needs_connection",
+   "reported": true
+  },
+  {
+   "stage": "attest",
+   "reason": "http",
+   "http_status": 503,
+   "on_device": "none",
+   "error_code": null,
+   "code": "download_failed",
+   "reported": true
+  },
+  {
+   "stage": "attest",
+   "reason": "network",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "none",
+   "reported": false
+  },
+  {
+   "stage": "lease",
+   "reason": "network",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "needs_connection",
+   "reported": true
+  },
+  {
+   "stage": "lease",
+   "reason": "expired",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "needs_connection",
+   "reported": true
+  },
+  {
+   "stage": "lease",
+   "reason": "http",
+   "http_status": 503,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "download_failed",
+   "reported": true
+  },
+  {
+   "stage": "lease",
+   "reason": "rate_limited",
+   "http_status": 429,
+   "on_device": "complete",
+   "error_code": null,
+   "code": "download_failed",
+   "reported": true
+  },
+  {
+   "stage": "lease",
+   "reason": "refused",
+   "http_status": 401,
+   "on_device": "complete",
+   "error_code": "key_revoked",
+   "code": "server_rejected",
+   "reported": true
+  },
+  {
+   "stage": "lease",
+   "reason": "stopped",
+   "http_status": 401,
+   "on_device": "complete",
+   "error_code": "key_revoked",
+   "code": "invalid_key",
+   "reported": true
+  },
+  {
+   "stage": "lease",
+   "reason": "stopped",
+   "http_status": 403,
+   "on_device": "complete",
+   "error_code": "app_blocked",
+   "code": "server_rejected",
+   "reported": true
+  },
+  {
+   "stage": "lease",
+   "reason": "refused",
+   "http_status": 403,
+   "on_device": "none",
+   "error_code": "sdk_too_old",
+   "code": "sdk_too_old",
+   "reported": true
+  },
+  {
+   "stage": "lease",
+   "reason": "integrity_failed",
+   "http_status": 403,
+   "on_device": "none",
+   "error_code": "lease_integrity_failed",
+   "code": "server_rejected",
+   "reported": true
+  },
+  {
+   "stage": "lease",
+   "reason": "grace",
+   "http_status": null,
+   "on_device": "complete",
+   "error_code": "network",
+   "code": "none",
+   "reported": true
+  },
+  {
+   "stage": "lease",
+   "reason": "grace",
+   "http_status": 503,
+   "on_device": "complete",
+   "error_code": "http",
+   "code": "none",
+   "reported": true
+  },
+  {
+   "stage": "lease",
+   "reason": "grace",
+   "http_status": 429,
+   "on_device": "complete",
+   "error_code": "rate_limited",
+   "code": "none",
+   "reported": true
+  },
+  {
+   "stage": "lease",
+   "reason": "lease_unavailable",
+   "http_status": 503,
+   "on_device": "complete",
+   "error_code": "lease_unavailable",
+   "code": "download_failed",
+   "reported": true
+  },
+  {
+   "stage": "lease",
+   "reason": "grace",
+   "http_status": 503,
+   "on_device": "complete",
+   "error_code": "lease_unavailable",
+   "code": "none",
+   "reported": true
+  }
+ ]
+}

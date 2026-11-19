@@ -1,0 +1,4 @@
+# Development only (pub never publishes this file): the plugin from this repository.
+dependency_overrides:
+  quranlab_tajweedformer:
+    path: ../quranlab_tajweedformer
