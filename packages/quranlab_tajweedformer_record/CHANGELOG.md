@@ -1,3 +1,7 @@
+## 4.0.3 (2026-11-22)
+
+With `quranlab_tajweedformer` 4.0.3. No change to the microphone helper.
+
 ## 4.0.2 (2026-11-22)
 
 With `quranlab_tajweedformer` 4.0.2, where nothing waits for Wi-Fi (the `unmeteredOnly` option of `prefetch()` is

@@ -1,5 +1,5 @@
 group = "ai.quranlab.tajweedformer.flutter"
-version = "4.0.2"
+version = "4.0.3"
 
 // The Android SDK this plugin wraps, from Maven Central, through its public API only. EXACTLY this version: the
 // plugin is built and tested against it. Change it only together with a build and the plugin's tests against the new
