@@ -18,7 +18,7 @@ flutter pub add quranlab_tajweedformer
 | **Flutter** | 3.41 or later. On iOS the app uses Flutter's Swift Package Manager integration (on by default since 3.44): the Apple SDK is a Swift package only. |
 | **Android** | Android 8.0 (API 26) or later: `minSdk = 26`. Phones and tablets are `arm64-v8a` and `armeabi-v7a`; `x86_64` runs the CPU engine on emulators, with a development key only. Add your signing certificates on the key's page for hardware-verified installs. |
 | **iOS** | iOS 15 or later on Apple silicon, Xcode 16. `NSMicrophoneUsageDescription` in `Info.plist`. The App Attest capability, for hardware-verified installs, the Neural Engine and shared recordings. A development key on the Simulator. |
-| **Download** | The first `client.model()` downloads the model, about 56 MB once, encrypted for the install. It then runs offline under the install's lease, days at a time (set by Quran Lab, and it may change), renewed in the background while online. |
+| **Download** | The first `client.model()` downloads the model, about 56 MB once, encrypted for the install. After that the model works offline, and the SDK keeps itself up to date in the background when the device is online. If Quran Lab's main servers can't be reached, the SDK uses backup servers automatically. |
 | **Takes** | A model runs one take at a time; a take holds at most 20 minutes of audio. |
 
 ## Quick start
@@ -38,7 +38,9 @@ Future<void> quickStart(void Function(String heard) show) async {
 These are the four calls of every Quran Lab SDK: client, model, listen, read. Each chunk carries the raw heads you
 selected (`chunk.heads`) and the decoded layer of the take so far (`chunk.decoded`: the text, each token with its
 times and confidence, and how many tokens are settled). `session.finish()` ends a take and returns its heads.
-Every failure is a `TajweedError` with the native SDK's `code`, `message`, `fix` and `docs` link.
+Every failure is a `TajweedError` with the native SDK's `code`, `message`, `fix` and `docs` link, and its `cause`
+(where and why it failed; on `needs_connection`, `cause.needs` is `model` when the model files are not on the device
+yet, `lease` when the model is on the device and needs Quran Lab's answer to open).
 
 - **Your own audio:** `model.session()` and `session.pushInt16(...)` or `session.push(...)` replace `listen()`.
   The optional package `quranlab_tajweedformer_record` captures the microphone with the `record` plugin.

@@ -22,10 +22,17 @@ internal object Wire {
         reason = reason,
     )
 
-    fun error(code: String, message: String, fix: String, docs: String): ErrorMessage = ErrorMessage(code, message, fix, docs)
+    fun error(code: String, message: String, fix: String, docs: String, cause: ErrorCauseMessage? = null): ErrorMessage =
+        ErrorMessage(code, message, fix, docs, cause)
 
-    /** A failure as the platform channel carries it: the SDK's code, its message, and [fix, docs]. */
-    fun flutterError(code: String, message: String, fix: String, docs: String): FlutterError = FlutterError(code, message, listOf(fix, docs))
+    /** The SDK's failure as the platform channel carries it: its code, its message, and [fix, docs, cause] (or null). */
+    fun flutterError(code: String, message: String, fix: String, docs: String, cause: ErrorCauseMessage?): FlutterError =
+        FlutterError(code, message, listOf(fix, docs, cause))
+
+    /** The public cause of the SDK's error (`TajweedError.errorCause`, contract 24.13), its tokens unchanged. */
+    fun errorCause(stage: String, reason: String, httpStatus: Int?, errorName: String?, errorCode: String?,
+                   needs: String?): ErrorCauseMessage =
+        ErrorCauseMessage(stage, reason, httpStatus?.toLong(), errorName, errorCode, needs)
 
     fun options(o: SessionOptionsMessage): TajweedSessionOptions = TajweedSessionOptions(
         context = o.context,
@@ -223,5 +230,6 @@ internal object PluginErrors {
     fun engineFailed(t: Throwable): FlutterError = make("engine_failed", "The engine failed: ${t.javaClass.simpleName}.",
         "Call client.diagnose() and send the report to Quran Lab; a new session on the same model can be tried.")
 
-    private fun make(code: String, message: String, fix: String): FlutterError = Wire.flutterError(code, message, fix, DOCS + code)
+    /** [fix, docs]: the plugin's own errors carry no cause. */
+    private fun make(code: String, message: String, fix: String): FlutterError = FlutterError(code, message, listOf(fix, DOCS + code))
 }

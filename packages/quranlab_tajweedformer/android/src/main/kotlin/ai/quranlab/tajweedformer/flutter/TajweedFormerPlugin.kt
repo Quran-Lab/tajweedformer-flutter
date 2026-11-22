@@ -143,21 +143,21 @@ class TajweedFormerPlugin : FlutterPlugin, ActivityAware, TajweedHostApi {
 
     override suspend fun model(version: String?, progressId: Long?): ModelMessage = sdk {
         val c = client()
-        if (progressId != null && version == null) prefetchWithProgress(c, false, progressId)
+        if (progressId != null && version == null) prefetchWithProgress(c, progressId)
         val m = c.model(version)
         Host.model = m
         withContext(Dispatchers.Default) { Sdk.model(m) }
     }
 
-    override suspend fun prefetch(unmeteredOnly: Boolean, progressId: Long?) = sdk {
+    override suspend fun prefetch(progressId: Long?) = sdk {
         val c = client()
-        if (progressId == null) c.prefetch(unmeteredOnly) else prefetchWithProgress(c, unmeteredOnly, progressId)
+        if (progressId == null) c.prefetch() else prefetchWithProgress(c, progressId)
     }
 
     /** The download with its progress sent to Dart at most every 100 ms, and always at the end. */
-    private suspend fun prefetchWithProgress(c: TajweedClient, unmeteredOnly: Boolean, progressId: Long) {
+    private suspend fun prefetchWithProgress(c: TajweedClient, progressId: Long) {
         val throttle = Throttle(100)
-        c.prefetch(unmeteredOnly) { done, total ->
+        c.prefetch { done, total ->
             if (throttle.pass(done >= total)) {
                 Host.scope.launch(Dispatchers.Main) { emit(ProgressUpdate(progressId, done, total)) }
             }

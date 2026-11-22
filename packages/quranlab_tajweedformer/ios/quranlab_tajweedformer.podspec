@@ -5,7 +5,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'quranlab_tajweedformer'
-  s.version          = '4.0.0'
+  s.version          = '4.0.2'
   s.summary          = 'TajweedFormer V4 for Flutter (iOS needs Swift Package Manager).'
   s.homepage         = 'https://sdk.quranlab.ai'
   s.license          = { :file => '../LICENSE' }

@@ -79,7 +79,8 @@ TajweedBackend backendOf(BackendMessage m) => TajweedBackend(
       reason: m.reason,
     );
 
-TajweedError errorOf(ErrorMessage m) => TajweedError(m.code, m.message, fix: m.fix, docs: m.docs);
+TajweedError errorOf(ErrorMessage m) =>
+    TajweedError(m.code, m.message, fix: m.fix, docs: m.docs, cause: m.cause == null ? null : causeOf(m.cause!));
 
 TajweedEvent eventOf(EventMessage m) {
   switch (m.type) {

@@ -125,6 +125,26 @@ void main() {
       expect(d.json, contains('"lastError": "invalid_key"'));
     });
 
+    test('diagnose() passes the hosts in use and the last failover through (native SDK 4.0.1, contract 28.7)', () async {
+      native.on('diagnose', (_) => '{"sdk": {"version": "4.0.1"}, "config": "fresh", "endpoints": {"api": '
+          '"api-b.tajweedformer.com", "models": "cdn.quranlab.ai", "lastFailover": {"role": "api", "from": '
+          '"api.quranlab.ai", "to": "api-b.tajweedformer.com", "reason": "http", "status": 503, "at": 1795600000}}}');
+      final (client, _) = await open();
+      final d = await client.diagnose();
+      final e = d.endpoints!;
+      expect((e.api, e.models), ('api-b.tajweedformer.com', 'cdn.quranlab.ai'));
+      final f = e.lastFailover!;
+      expect((f.role, f.from, f.to, f.reason, f.status, f.at),
+          ('api', 'api.quranlab.ai', 'api-b.tajweedformer.com', 'http', 503, 1795600000));
+      expect(d.json, contains('"lastFailover"'));
+      native.on('diagnose', (_) => '{"sdk": {"version": "4.0.1"}, "endpoints": {"api": "api.quranlab.ai", '
+          '"models": "cdn.quranlab.ai", "lastFailover": null}}');
+      final quiet = (await client.diagnose()).endpoints!;
+      expect((quiet.api, quiet.lastFailover), ('api.quranlab.ai', null));
+      native.on('diagnose', (_) => '{"sdk": {"version": "4.0.0"}}');
+      expect((await client.diagnose()).endpoints, isNull);
+    });
+
     test('a diagnosis without the protected object (a client with no key) has none; a lease before any is none',
         () async {
       native.on('diagnose', (_) => '{"sdk": {"version": "4.0.0"}, "config": "none"}');
@@ -401,8 +421,9 @@ void main() {
     });
   });
 
-  test('no name of the plugin is audience, children or guardian: one sharing sheet for every app', () {
-    // the public library and everything under lib/, the channel's definition and both native sides, comments aside
+  /// Every name in the public library and everything under lib/, the channel's definition and both native sides,
+  /// comments aside, that [banned] matches.
+  List<String> namesMatching(RegExp banned) {
     final source = RegExp(r'\.(dart|kt|swift)$');
     final files = [
       for (final dir in ['lib', 'pigeon', 'android/src/main', 'ios'])
@@ -411,7 +432,6 @@ void main() {
     expect(files.map((f) => f.uri.pathSegments.last),
         containsAll(['quranlab_tajweedformer.dart', 'client.dart', 'sharing.dart', 'messages.dart', 'Messages.g.kt',
             'TajweedFormerPlugin.kt', 'Messages.g.swift', 'TajweedFormerPlugin.swift']));
-    final banned = RegExp('audience|children|guardian', caseSensitive: false);
     final found = <String>[];
     for (final f in files) {
       final code = f.readAsLinesSync().map((l) => l.replaceFirst(RegExp(r'(^|\s)//.*$'), '')).join('\n');
@@ -419,7 +439,57 @@ void main() {
         if (banned.hasMatch(m[0]!)) found.add('${f.path}: ${m[0]}');
       }
     }
-    expect(found, isEmpty);
+    return found;
+  }
+
+  test('no name of the plugin is audience, children or guardian: one sharing sheet for every app', () {
+    expect(namesMatching(RegExp('audience|children|guardian', caseSensitive: false)), isEmpty);
+  });
+
+  group('nothing waits for Wi-Fi', () {
+    test('no_wait_40 other_context_metered: prefetch() installs the default context, then a session on c24_l256; '
+        'no network condition crosses the channel', () async {
+      native.ok(['prefetch']);
+      native.on('model', (_) => modelMessage()
+        ..contexts = ['c16_l64', 'c8_l64', 'c24_l256']
+        ..chunkMs = [320, 160, 480]);
+      final client = await TajweedClient.create('qlk_v1_test');
+      await client.prefetch();
+      await client.prefetch(onProgress: (_, _) {});
+      final model = await client.model();
+      final session = await model.session(options: const TajweedSessionOptions(context: 'c24_l256'));
+      // what the plugin asks of the native SDK, in order: prefetch carries its progress id and nothing else (4.0.1
+      // sent unmeteredOnly first), and the session asks for c24_l256, whose files the native SDK downloads on
+      // whatever network the device has (section 33.1; its own tests replay the case against a stand-in server)
+      expect([for (final c in native.calls) c.$1], ['createClient', 'prefetch', 'prefetch', 'model', 'openSession']);
+      expect(native.calls[1].$2, [null]);
+      expect(native.calls[2].$2, hasLength(1));
+      expect(native.calls[2].$2.single, isA<int>());
+      final open = native.calls[4].$2;
+      expect(open[1], 'push');
+      expect((open[2]! as SessionOptionsMessage).context, 'c24_l256');
+      await session.cancel();
+    });
+
+    test('no_wait_40 other_context_none: no network at all is needs_connection, its cause needs the model', () async {
+      native.on('model', (_) => modelMessage()
+        ..contexts = ['c16_l64', 'c8_l64', 'c24_l256']
+        ..chunkMs = [320, 160, 480]);
+      native.on('openSession', (_) => throw sdkError('needs_connection', 'm', 'f',
+          cause: ErrorCauseMessage(stage: 'download', reason: 'network', needs: 'model')));
+      final client = await TajweedClient.create('qlk_v1_test');
+      final model = await client.model();
+      final got = await model
+          .session(options: const TajweedSessionOptions(context: 'c24_l256'))
+          .then<Object>((s) => s, onError: (Object e) => e);
+      expect(got, isA<TajweedError>().having((e) => e.code, 'code', TajweedErrorCode.needsConnection));
+      expect((got as TajweedError).cause?.needs, TajweedErrorCause.needsModel);
+      expect(got.cause?.stage, 'download');
+    });
+
+    test('no name of the plugin waits for a kind of network: no unmetered or Wi-Fi option', () {
+      expect(namesMatching(RegExp('unmetered|wifi', caseSensitive: false)), isEmpty);
+    });
   });
 
   test('every catalogue code is listed once', () {
@@ -429,11 +499,14 @@ void main() {
   });
 
   group('ERRORS_40', () {
-    final vectors = jsonDecode(File('test/fixtures/errors_40_codes.json').readAsStringSync()) as Map<String, Object?>;
+    // the code and cause rows of quranlab-contract sdk_4.0.0/vectors/errors_40.json at adca6f6 (SDK 4.0.2); its
+    // `from` names the full file's SHA-256 and the one row left out
+    final vectors = jsonDecode(File('test/fixtures/errors_40.json').readAsStringSync()) as Map<String, Object?>;
     final cases = (vectors['codes'] as List).cast<Map<String, Object?>>();
+    final causes = (vectors['causes'] as List).cast<Map<String, Object?>>();
 
     test('the code cases name catalogue codes only, and the unreported five are the API-misuse ones', () {
-      expect(cases, hasLength(66));
+      expect(cases, hasLength(73));
       for (final c in cases) {
         final code = c['code'] as String;
         if (code != 'none') expect(TajweedErrorCode.all, contains(code), reason: '$c');
@@ -466,6 +539,106 @@ void main() {
         }
         await client.close();
       }
+    });
+
+    test('24.13: each cause row reaches Dart as the native error carries it, on a call and at the end of a take',
+        () async {
+      expect(causes, hasLength(14));
+      for (final c in causes) {
+        final code = c['code'] as String;
+        final want = c['cause'] as Map<String, Object?>?;
+        final cause = want == null
+            ? null
+            : TajweedErrorCause(
+                stage: want['stage']! as String,
+                reason: want['reason']! as String,
+                httpStatus: want['http_status'] as int?,
+                errorName: want['error_name'] as String?,
+                errorCode: want['error_code'] as String?,
+                needs: want['needs'] as String?);
+        if (code == 'needs_connection') {
+          final needs = c['on_device'] == 'complete' ? TajweedErrorCause.needsLease : TajweedErrorCause.needsModel;
+          expect(cause?.needs, needs, reason: '${c['label']}');
+        } else {
+          expect(cause?.needs, isNull, reason: '${c['label']}');
+        }
+        native.on('model', (_) {
+          if (code == 'none') return modelMessage(); // a silent failure makes no error
+          throw sdkError(code, 'The native message.', 'The native fix.', cause: causeMessage(want));
+        });
+        final client = await TajweedClient.create('qlk_v1_test');
+        final got = await client.model().then<Object>((m) => m, onError: (Object e) => e);
+        if (code == 'none') {
+          expect(got, isA<TajweedModel>(), reason: '${c['label']}');
+          await client.close();
+          continue;
+        }
+        expect(got, isA<TajweedError>().having((e) => e.code, 'code', code).having((e) => e.cause, 'cause', cause),
+            reason: '${c['label']}');
+        // the same error ending a take (TajweedEnded), through the update channel
+        native.on('model', (_) => modelMessage());
+        final model = await client.model();
+        late int id;
+        native.on('openSession', (args) => id = args[0] as int);
+        final session = await model.session();
+        final ended = session.events.firstWhere((e) => e is TajweedEnded);
+        native.emit(EventUpdate(
+            sessionId: id,
+            event: EventMessage(
+                type: 'ended',
+                reason: 'error',
+                error: ErrorMessage(
+                    code: code, message: 'm', fix: 'f', docs: 'd', cause: causeMessage(want)))));
+        native.emit(ClosedUpdate(sessionId: id));
+        final end = await ended as TajweedEnded;
+        expect(end.error?.code, code);
+        expect(end.error?.cause, cause, reason: '${c['label']}');
+        await client.close();
+      }
+    });
+
+    test('24.13: needs_connection with needs model, with needs lease, and an error with no cause', () async {
+      Future<TajweedError> fail(PlatformException e) async {
+        native.on('model', (_) => throw e);
+        final client = await TajweedClient.create('qlk_v1_test');
+        final got = await client.model().then<Object>((m) => m, onError: (Object e) => e);
+        await client.close();
+        return got as TajweedError;
+      }
+
+      final model = await fail(sdkError('needs_connection', 'm', 'f',
+          cause: ErrorCauseMessage(stage: 'download', reason: 'network', errorName: 'java.net.UnknownHostException',
+              needs: 'model')));
+      expect(model.code, TajweedErrorCode.needsConnection);
+      expect(model.cause, const TajweedErrorCause(
+          stage: 'download', reason: 'network', errorName: 'java.net.UnknownHostException', needs: 'model'));
+      expect(model.cause!.needs, TajweedErrorCause.needsModel);
+      expect(model.cause!.httpStatus, isNull);
+      expect(model.cause.toString(), 'TajweedErrorCause(stage: download, reason: network, '
+          'errorName: java.net.UnknownHostException, needs: model)');
+
+      final lease = await fail(sdkError('needs_connection', 'm', 'f',
+          cause: ErrorCauseMessage(stage: 'lease', reason: 'network', errorName: 'NSURLErrorDomain', errorCode: '-1001',
+              needs: 'lease')));
+      expect(lease.cause!.needs, TajweedErrorCause.needsLease);
+      expect(lease.cause!.stage, 'lease');
+      expect(lease.cause!.errorCode, '-1001');
+      expect(lease, isNot(model));
+
+      final limit = await fail(sdkError('download_failed', 'm', 'f',
+          cause: ErrorCauseMessage(
+              stage: 'download', reason: 'rate_limited', httpStatus: 429, errorCode: 'model_limit')));
+      expect(limit.cause!.httpStatus, 429);
+      expect(limit.cause!.needs, isNull);
+
+      // the five API-misuse codes carry none (null in its place), nor do the plugin's own errors ([fix, docs])
+      final none = await fail(sdkError('session_open', 'm', 'f'));
+      expect(none.code, TajweedErrorCode.sessionOpen);
+      expect(none.cause, isNull);
+      final own = await fail(PlatformException(code: 'invalid_argument', message: 'm',
+          details: ['f', 'https://sdk.quranlab.ai/docs/errors#invalid_argument']));
+      expect(own.cause, isNull);
+      expect(own.fix, 'f');
     });
   });
 }

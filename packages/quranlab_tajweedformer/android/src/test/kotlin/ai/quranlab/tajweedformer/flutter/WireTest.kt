@@ -107,13 +107,46 @@ class WireTest {
         // ERRORS_40 24.4: the catalogue is the same 26 codes; the plugin passes the SDK's code, message, fix and docs
         assertEquals(26, catalogue.size)
         for (code in catalogue) {
-            val e = Wire.flutterError(code, "m $code", "f $code", "https://sdk.quranlab.ai/docs/errors#$code")
+            val e = Wire.flutterError(code, "m $code", "f $code", "https://sdk.quranlab.ai/docs/errors#$code", null)
             assertEquals(code, e.code)
             assertEquals("m $code", e.message)
-            assertEquals(listOf("f $code", "https://sdk.quranlab.ai/docs/errors#$code"), e.details)
+            assertEquals(listOf("f $code", "https://sdk.quranlab.ai/docs/errors#$code", null), e.details)
             assertEquals(ErrorMessage(code, "m $code", "f $code", "https://sdk.quranlab.ai/docs/errors#$code"),
                 Wire.error(code, "m $code", "f $code", "https://sdk.quranlab.ai/docs/errors#$code"))
         }
+    }
+
+    @Test
+    fun theErrorsCauseCrossesWithItsTokens() {
+        // ERRORS_40 24.13 (errors_40.json causes): the cause the SDK's error carries, unchanged, on both paths
+        val model = Wire.errorCause("download", "network", null, "java.net.UnknownHostException", null, "model")
+        assertEquals(ErrorCauseMessage("download", "network", null, "java.net.UnknownHostException", null, "model"), model)
+        val e = Wire.flutterError("needs_connection", "m", "f", "https://sdk.quranlab.ai/docs/errors#needs_connection", model)
+        assertEquals(listOf("f", "https://sdk.quranlab.ai/docs/errors#needs_connection", model), e.details)
+        val lease = Wire.errorCause("lease", "network", null, null, null, "lease")
+        assertEquals("lease", Wire.error("needs_connection", "m", "f", "d", lease).cause?.needs)
+        val limit = Wire.errorCause("download", "rate_limited", 429, null, "model_limit", null)
+        assertEquals(429L, limit.httpStatus)
+        assertEquals("model_limit", limit.errorCode)
+        assertNull(limit.needs)
+        // no cause (the five API-misuse codes): null in its place
+        assertEquals(listOf("f", "d", null), Wire.flutterError("session_open", "m", "f", "d", null).details)
+        assertNull(Wire.error("session_open", "m", "f", "d").cause)
+    }
+
+    @Test
+    fun theCauseSurvivesTheChannelsCodec() {
+        // the error reply as the host API sends it ([code, message, details]), through the codec Dart decodes with
+        val cause = Wire.errorCause("lease", "network", null, "java.net.SocketTimeoutException", null, "lease")
+        val e = Wire.flutterError("needs_connection", "m", "f", "d", cause)
+        val sent = listOf(e.code, e.message, e.details)
+        val bytes = TajweedHostApi.codec.encodeMessage(sent)!!
+        bytes.rewind()
+        assertEquals(sent, TajweedHostApi.codec.decodeMessage(bytes))
+        val ended = Wire.error("needs_connection", "m", "f", "d", cause)
+        val again = TajweedHostApi.codec.encodeMessage(ended)!!
+        again.rewind()
+        assertEquals(ended, TajweedHostApi.codec.decodeMessage(again))
     }
 
     @Test

@@ -2,5 +2,5 @@
 
 // The Apple SDK's Core has arm64 slices only (devices and the Apple silicon Simulator): no x86_64 Simulator build.
 EXCLUDED_ARCHS[sdk=iphonesimulator*] = x86_64
-// App Attest: 7-day leases, the Neural Engine and uploads of shared recordings (without it: 24-hour leases, the CPU).
+// App Attest: a hardware-verified install, the Neural Engine and uploads of shared recordings (without it: the CPU).
 CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements

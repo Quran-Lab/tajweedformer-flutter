@@ -4,7 +4,7 @@
 
 <p align="center">
   <img alt="platform: Android, iOS" src="https://img.shields.io/badge/platform-Android%20%7C%20iOS-1c1b19?style=flat-square">
-  <img alt="version: 4.0.0" src="https://img.shields.io/badge/version-4.0.0-2a3b8f?style=flat-square">
+  <img alt="version: 4.0.2" src="https://img.shields.io/badge/version-4.0.2-2a3b8f?style=flat-square">
   <img alt="model licence: NPL-1.2" src="https://img.shields.io/badge/model%20licence-NPL--1.2-1c1b19?style=flat-square">
 </p>
 
@@ -36,7 +36,7 @@
 </td>
 <td valign="top">
 
-**Nothing to host**<br>The SDK downloads the right model for each device (56.5 MB to start) from our CDN in six regions, verifies it and keeps it up to date.
+**Nothing to host**<br>The SDK downloads the right model for each device (56.5 MB to start) from Quran Lab's servers, verifies it and keeps it up to date.
 
 </td>
 <td valign="top">
@@ -72,10 +72,10 @@ Flutter 3.41 or later. On iOS the app uses Flutter's Swift Package Manager integ
 | | |
 | - | - |
 | **Key** | An apps key from [sdk.quranlab.ai](https://sdk.quranlab.ai/go/gh-tajweedformer-flutter) for your app's Android package name and iOS bundle id. On the Android emulator and the iOS Simulator, a development key: Quran Lab leases the Core's emulator and Simulator builds to development keys only. |
-| **Android** | Android 8.0 (API 26) or later: `minSdk = 26`. Phones and tablets are `arm64-v8a` and `armeabi-v7a`; `x86_64` runs the CPU engine only, on the emulator and x86 Chromebooks. The plugin brings `ai.quranlab:tajweedformer:4.0.0`; do not add it yourself. On your key's page, under "Signing certificates (SHA-256)", add the app signing key certificate and the upload key certificate: until you do, your installs are not hardware-verified for your app. At 4.0's launch every phone runs the Core's CPU engine. |
+| **Android** | Android 8.0 (API 26) or later: `minSdk = 26`. Phones and tablets are `arm64-v8a` and `armeabi-v7a`; `x86_64` runs the CPU engine only, on the emulator and x86 Chromebooks. The plugin brings `ai.quranlab:tajweedformer:4.0.2`; do not add it yourself. On your key's page, under "Signing certificates (SHA-256)", add the app signing key certificate and the upload key certificate: until you do, your installs are not hardware-verified for your app. At 4.0's launch every phone runs the Core's CPU engine. |
 | **iOS** | iOS 15 or later on Apple silicon (devices and the arm64 simulator), Xcode 16 or later, and Flutter's Swift Package Manager integration (the Apple SDK ships only as a Swift package). `NSMicrophoneUsageDescription` in `Info.plist`. The App Attest capability: with it an install is hardware-verified, may use the Neural Engine, and uploads shared recordings. Exclude x86_64 from Simulator builds (`EXCLUDED_ARCHS[sdk=iphonesimulator*] = x86_64`): the Core is arm64 only. |
 | **Download** | Making the client downloads nothing. The first `client.model()` or `client.prefetch()` downloads the model, encrypted: 56.5 MB, once (73.8 MB on disk), and needs a connection. |
-| **Offline** | The model opens under a lease Quran Lab signs for this install, renewed in the background whenever the device is online: learners keep working offline for days at a time (the exact time is set by Quran Lab and may change). When the lease has ended and Quran Lab cannot be reached, the model keeps opening for up to 24 hours more; a refusal ends that at once. A model that is open keeps running. |
+| **Offline** | The first `client.model()` or `client.prefetch()` needs a connection; after that the model works offline, and the SDK keeps itself up to date in the background when the device is online. `needs_connection` means the SDK needs Quran Lab to continue. A model that is open keeps running. |
 | **Model** | The model runs only inside the Quran Lab Core, which comes with the native SDKs: its files are encrypted from Quran Lab's server to the device, and no plain model file is ever written. When Quran Lab refuses the key or the app, the model's files are removed. |
 | **Analytics** | Anonymous counts and durations (never audio, text, names or device identifiers) and reports of the failures your learners hit are always sent; you find them at sdk.quranlab.ai under your app, Problems included. |
 | **Takes** | A model runs one take at a time; a take holds at most 20 minutes of audio. |

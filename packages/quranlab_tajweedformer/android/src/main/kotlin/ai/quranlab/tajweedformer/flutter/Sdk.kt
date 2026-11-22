@@ -18,9 +18,13 @@ import ai.quranlab.tajweedformer.TajweedToken
 internal object Sdk {
     fun backend(b: TajweedBackend): BackendMessage = Wire.backend(b.kind, b.name, b.stage, b.reason)
 
-    fun error(e: TajweedError): ErrorMessage = Wire.error(e.code, e.message, e.fix, e.docs)
+    /** The SDK 4.0.2 public cause (`errorCause`, never Kotlin's `cause`, which is the underlying Throwable). */
+    fun cause(e: TajweedError): ErrorCauseMessage? =
+        e.errorCause?.let { Wire.errorCause(it.stage, it.reason, it.httpStatus, it.errorName, it.errorCode, it.needs) }
 
-    fun flutterError(e: TajweedError): FlutterError = Wire.flutterError(e.code, e.message, e.fix, e.docs)
+    fun error(e: TajweedError): ErrorMessage = Wire.error(e.code, e.message, e.fix, e.docs, cause(e))
+
+    fun flutterError(e: TajweedError): FlutterError = Wire.flutterError(e.code, e.message, e.fix, e.docs, cause(e))
 
     fun model(m: TajweedModel): ModelMessage = ModelMessage(
         id = m.id,

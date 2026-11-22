@@ -95,17 +95,17 @@ class TajweedClient {
   /// Call it early (at app start) so the first take starts at once.
   ///
   /// SDK 4.0: the model is encrypted for this install and opens only inside the native SDK's Core, under a lease
-  /// Quran Lab signs for the install (learners keep working offline for days at a time; the exact time is set by
-  /// Quran Lab and may change), renewed in the background whenever the device is online. Offline with a valid lease, the model opens. When the lease has ended and Quran
-  /// Lab cannot be reached (no answer, a server error, too many requests), the model still opens for up to 24 hours
-  /// more, and the native SDK reports it; a refusal ends that at once. A model already open keeps running.
+  /// Quran Lab signs for the install. The first run needs a connection; after that the model opens offline, and the
+  /// native SDK keeps itself up to date in the background when the device is online. A model already open keeps
+  /// running.
   ///
   /// [version] pins a model version (`4.0.0`); null takes the version Quran Lab serves this app. [onProgress]
   /// gets the bytes done and the total while the version Quran Lab serves is downloaded (a pinned [version]
-  /// downloads without progress). Errors: `needs_connection` (no answer, and nothing on the device or no lease
-  /// left), `download_failed` (Quran Lab or the CDN answered with a failure: call again later), `storage_full`,
-  /// `storage_failed`, `invalid_key`, `sdk_too_old`, `server_rejected` (a refused key or app, a production key on an
-  /// emulator or simulator), `model_unavailable` and the model's own.
+  /// downloads without progress). Errors: `needs_connection` (the SDK needs to reach Quran Lab to continue and got no
+  /// answer; its `cause.needs` is `model` when the model files are not on the device yet, `lease` when the model is
+  /// on the device and needs Quran Lab's answer to open), `download_failed` (Quran Lab or the CDN answered with a
+  /// failure: call again later), `storage_full`, `storage_failed`, `invalid_key`, `sdk_too_old`, `server_rejected` (a
+  /// refused key or app, a production key on an emulator or simulator), `model_unavailable` and the model's own.
   Future<TajweedModel> model({String? version, void Function(int done, int total)? onProgress}) async {
     _checkOpen();
     final p = _bridge.progress(onProgress);
@@ -116,14 +116,14 @@ class TajweedClient {
     }
   }
 
-  /// Downloads and verifies the model ahead of use, without opening it. Resumable; a no-op when everything is on
-  /// the device. With [unmeteredOnly] nothing is downloaded on a metered connection or none (call it again
-  /// later). Safe to call at every app start.
-  Future<void> prefetch({bool unmeteredOnly = false, void Function(int done, int total)? onProgress}) async {
+  /// Downloads and verifies the model ahead of use, without opening it, on whatever network the device has.
+  /// Resumable; a no-op when everything is on the device. [onProgress] gets the bytes done and the total. Safe to
+  /// call at every app start.
+  Future<void> prefetch({void Function(int done, int total)? onProgress}) async {
     _checkOpen();
     final p = _bridge.progress(onProgress);
     try {
-      await guarded(() => _bridge.api.prefetch(unmeteredOnly, p));
+      await guarded(() => _bridge.api.prefetch(p));
     } finally {
       _bridge.done(p);
     }
@@ -183,7 +183,8 @@ class TajweedStorage {
 }
 
 /// The protected model in `diagnose()` (SDK 4.0, the same object on Android, Apple, C and web): where the install's key
-/// lives and the lease the Core holds. A lease shows here and in whether the model opens: there is nothing to set.
+/// lives and the lease the Core holds, for support. An app does not act on it: `client.model()` says what to do, and
+/// there is nothing to set.
 class TajweedProtectedModel {
   TajweedProtectedModel._(Map<String, Object?> m)
       : keyStore = m['keyStore'] as String?,
@@ -198,25 +199,69 @@ class TajweedProtectedModel {
   /// `keychain`, `software` or `file`. Null before the install asked for its first lease.
   final String? keyStore;
 
-  /// `valid`, `grace` (expired, and the model opens in its 24 hours because Quran Lab could not be reached),
-  /// `expired`, `stopped` (a refusal the Core verified) or `none`.
+  /// The state of the lease the Core holds, for support: `valid`, `grace`, `expired`, `stopped` (a refusal the Core
+  /// verified) or `none`. An app does not act on it: `client.model()` says what to do.
   final String lease;
 
-  /// The lease's end, unix seconds (also once it has expired or was stopped); null without a lease.
+  /// A time of the lease the Core holds (unix seconds, its `exp`), for support; null without a lease.
   final int? leaseExpires;
 
   /// `attested` (a hardware-verified install of a production key, the class that may use the accelerator) or
   /// `standard`; null without a lease, or when the SDK does not say.
   final String? leaseClass;
 
-  /// When the native SDK renews the lease in the background, unix seconds; null when unknown.
+  /// A time of the lease the Core holds (unix seconds, its `refresh_after`), for support; null when unknown.
   final int? refreshAfter;
 
-  /// The end of the grace, unix seconds, only while [lease] is `grace`.
+  /// A time the Core gives while [lease] is `grace` (unix seconds), for support; null otherwise.
   final int? graceUntil;
 
   /// The Core's release and target (`4.0.0-c3 android-arm64-v8a`); null while it is not loaded.
   final String? core;
+}
+
+/// The last time a request went to a backup server (native SDK 4.0.1), for support.
+class TajweedFailover {
+  TajweedFailover._(Map<String, Object?> m)
+      : role = m['role'] as String? ?? '',
+        from = m['from'] as String? ?? '',
+        to = m['to'] as String?,
+        reason = m['reason'] as String? ?? '',
+        status = (m['status'] as num?)?.toInt(),
+        at = (m['at'] as num?)?.toInt() ?? 0;
+
+  /// `api` or `models` (`web_frame` on the web SDK only).
+  final String role;
+
+  /// The server that did not answer, and the one that did (null when none did).
+  final String from;
+  final String? to;
+
+  /// Why the first server failed: `network`, `timeout`, `http`, `redirect` or `invalid_answer`; [status] its HTTP
+  /// status.
+  final String reason;
+  final int? status;
+
+  /// When, unix seconds.
+  final int at;
+}
+
+/// Which of Quran Lab's servers the native SDK is using (native SDK 4.0.1), for support. If Quran Lab's main servers
+/// can't be reached, the SDK uses backup servers automatically. There is nothing to set.
+class TajweedEndpoints {
+  TajweedEndpoints._(Map<String, Object?> m)
+      : api = m['api'] as String?,
+        models = m['models'] as String?,
+        lastFailover = m['lastFailover'] is Map ? TajweedFailover._((m['lastFailover'] as Map).cast<String, Object?>()) : null;
+
+  /// The server the next API request goes to first.
+  final String? api;
+
+  /// The server the next model request goes to first.
+  final String? models;
+
+  /// The last time this process used a backup server, or null.
+  final TajweedFailover? lastFailover;
 }
 
 /// `client.diagnose()`: where the SDK stands, with the same fields on every Quran Lab SDK.
@@ -237,7 +282,8 @@ class TajweedDiagnosis {
         droppedChunks = (m['droppedChunks'] as num?)?.toInt() ?? 0,
         connection = m['connection'] as String? ?? 'unknown',
         downloadProtocol = m['downloadProtocol'] as String?,
-        protectedModel = m['protected'] is Map ? TajweedProtectedModel._((m['protected'] as Map).cast<String, Object?>()) : null;
+        protectedModel = m['protected'] is Map ? TajweedProtectedModel._((m['protected'] as Map).cast<String, Object?>()) : null,
+        endpoints = m['endpoints'] is Map ? TajweedEndpoints._((m['endpoints'] as Map).cast<String, Object?>()) : null;
 
   factory TajweedDiagnosis.fromJson(String json) {
     final v = jsonDecode(json);
@@ -270,7 +316,8 @@ class TajweedDiagnosis {
   final String? lastError;
   final int droppedChunks;
 
-  /// `unmetered`, `metered`, `none` or `unknown`.
+  /// The network the device reports: `unmetered`, `metered`, `none` or `unknown`. For support only: the SDK sends
+  /// its requests on any network.
   final String connection;
 
   /// Android only: the protocol of the last model request (`http/1.1`), or null.
@@ -279,6 +326,9 @@ class TajweedDiagnosis {
   /// SDK 4.0: the protected model, its key store and the install's lease as the Core holds it; null where the native
   /// SDK writes none (a client without a key).
   final TajweedProtectedModel? protectedModel;
+
+  /// Native SDK 4.0.1: the servers in use, for support; null where the native SDK writes none (4.0.0).
+  final TajweedEndpoints? endpoints;
 
   static TajweedBackend? _backend(Object? b) {
     if (b is! Map) return null;

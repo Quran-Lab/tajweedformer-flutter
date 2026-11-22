@@ -13,15 +13,23 @@ enum Wire {
     }
 
     static func error(_ e: TajweedError) -> ErrorMessage {
-        ErrorMessage(code: e.code, message: e.message, fix: e.fix, docs: e.docs)
+        ErrorMessage(code: e.code, message: e.message, fix: e.fix, docs: e.docs, cause: cause(e))
     }
 
-    /// A failure as the platform channel carries it: the SDK's code, its message, and [fix, docs].
+    /// The SDK 4.0.2 public cause (`TajweedError.cause`, contract 24.13), its tokens unchanged.
+    static func cause(_ e: TajweedError) -> ErrorCauseMessage? {
+        guard let c = e.cause else { return nil }
+        return ErrorCauseMessage(stage: c.stage, reason: c.reason, httpStatus: c.httpStatus.map { Int64($0) },
+                                 errorName: c.errorName, errorCode: c.errorCode, needs: c.needs)
+    }
+
+    /// The SDK's failure as the platform channel carries it: its code, its message, and [fix, docs, cause] (or nil).
     static func pigeonError(_ e: TajweedError) -> PigeonError {
-        PigeonError(code: e.code, message: e.message, details: [e.fix, e.docs])
+        let details: [Sendable?] = [e.fix, e.docs, cause(e)]
+        return PigeonError(code: e.code, message: e.message, details: details)
     }
 
-    /// An error of the plugin itself, in the catalogue's terms.
+    /// An error of the plugin itself, in the catalogue's terms: [fix, docs], no cause.
     static func pluginError(_ code: String, _ message: String, fix: String) -> PigeonError {
         PigeonError(code: code, message: message, details: [fix, "https://sdk.quranlab.ai/docs/errors#\(code)"])
     }
