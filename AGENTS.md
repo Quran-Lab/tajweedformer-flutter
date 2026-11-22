@@ -56,7 +56,7 @@ Copy the setup prompt from [sdk.quranlab.ai](https://sdk.quranlab.ai) and paste 
 
 - **What it is:** one Flutter plugin, `quranlab_tajweedformer`, for Android and iOS. It is a thin layer over Quran
   Lab's native SDKs 4.0 and carries no copy of either: on Android it depends on Maven `ai.quranlab:tajweedformer`
-  4.0.2, on iOS on the Swift package `Quran-Lab/tajweedformer-apple` 4.0.2 (exactly these versions, the ones it is
+  4.0.2, on iOS on the Swift package `Quran-Lab/tajweedformer-apple` 4.0.3 (exactly these versions, the ones it is
   built and tested with), and it uses only their public API. The Dart API has the native
   SDKs' names and shapes: a `TajweedClient` (the app's key, one per process), a `TajweedModel` (a verified model
   on the device), a `TajweedSession` (one take), the `TajweedHeads` (the model's output) and the `TajweedBackend`
@@ -341,8 +341,8 @@ The iOS side builds on a Mac: `flutter build ios --simulator` in `example/`.
 
 ## Status
 
-4.0.2 on pub.dev (`quranlab_tajweedformer` and `quranlab_tajweedformer_record`), over the Android SDK 4.0.2 and the
-Apple SDK 4.0.2. The plugin builds and passes its tests against both. The 4.0 end-to-end test passed with 4.0.0 on
+4.0.3 on pub.dev (`quranlab_tajweedformer` and `quranlab_tajweedformer_record`), over the Android SDK 4.0.2 and the
+Apple SDK 4.0.3. The plugin builds and passes its tests against both. The 4.0 end-to-end test passed with 4.0.0 on
 the Android emulator, the iOS Simulator and an iPhone (App Attest, the hardware-verified install, the Neural Engine),
 and with 4.0.2 on the iOS Simulator.
 

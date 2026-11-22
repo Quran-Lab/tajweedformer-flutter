@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.0.3
+
+`quranlab_tajweedformer` 4.0.3 and `quranlab_tajweedformer_record` 4.0.3, over TajweedFormer for Android 4.0.2 and
+TajweedFormer for iOS and macOS 4.0.3.
+
+- On iOS, opening the model with a new `TajweedClient` or right after `model.reference.fetch()` no longer fails with
+  `engine_failed` (`busy`) or `reference_missing`.
+- `quranlab_tajweedformer_record`: no change of its own.
+
 ## 4.0.2
 
 `quranlab_tajweedformer` 4.0.2 and `quranlab_tajweedformer_record` 4.0.2, over TajweedFormer for Android 4.0.2 and

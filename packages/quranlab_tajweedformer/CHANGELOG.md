@@ -1,3 +1,8 @@
+## 4.0.3 (2026-11-22)
+
+On iOS (over TajweedFormer for iOS 4.0.3; Android stays on 4.0.2), opening the model with a new `TajweedClient` or
+right after `model.reference.fetch()` no longer fails with `engine_failed` (`busy`) or `reference_missing`.
+
 ## 4.0.2 (2026-11-22)
 
 Over TajweedFormer for Android 4.0.2 and TajweedFormer for iOS and macOS 4.0.2.

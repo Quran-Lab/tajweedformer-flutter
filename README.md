@@ -4,7 +4,7 @@
 
 <p align="center">
   <img alt="platform: Android, iOS" src="https://img.shields.io/badge/platform-Android%20%7C%20iOS-1c1b19?style=flat-square">
-  <img alt="version: 4.0.2" src="https://img.shields.io/badge/version-4.0.2-2a3b8f?style=flat-square">
+  <img alt="version: 4.0.3" src="https://img.shields.io/badge/version-4.0.3-2a3b8f?style=flat-square">
   <img alt="model licence: NPL-1.2" src="https://img.shields.io/badge/model%20licence-NPL--1.2-1c1b19?style=flat-square">
 </p>
 
