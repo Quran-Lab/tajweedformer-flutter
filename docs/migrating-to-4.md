@@ -13,7 +13,7 @@ from V4.1 on, are published only encrypted, for SDK 4.0: an app on 3.x never get
 | Native 3.x under the plugin | Native 4.0 under the plugin |
 | --- | --- |
 | The model's files on the device were plain. | They are encrypted for this install. Only the calibration and the sample clips are plain, and no call gives a model file or its path. The first start after the upgrade downloads the model once more, so it needs a connection once. |
-| `client.model()` worked offline once the model was downloaded. | It works offline while the install's lease is valid: learners keep working offline for days at a time; the exact time is set by Quran Lab and may change; the lease is renewed in the background whenever the device is online. See "The lease". |
+| `client.model()` worked offline once the model was downloaded. | It still does: the first run needs a connection; after that the model works offline, and the native SDK keeps itself up to date in the background when the device is online. See "The lease". |
 | The plugin has no option to turn the anonymous analytics off. | Nor do the native 4.0 SDKs: their option is removed, so the analytics are always on for every install. They are daily counts and durations only, never audio, text, names or device identifiers. Nothing to change in Dart. |
 | iOS: the App Attest capability was needed only to upload shared recordings. | It also decides the install's class: with it, the install is hardware-verified and may use the Neural Engine; without it, the SDK still runs, on the CPU engine only. |
 | Android: the app's signing certificates played no part. | They decide the lease on most phones: add them at sdk.quranlab.ai (below). |
@@ -57,17 +57,12 @@ from V4.1 on, are published only encrypted, for SDK 4.0: an app on 3.x never get
 
 ## The lease
 
-- **A lease per install.** The model opens under a lease Quran Lab signs for this install: learners keep working offline for days at a time; the exact time is set by Quran Lab and may change.
-  While the device is online the native SDK renews it in the background about once a day, and a valid lease never
-  waits for a renewal. Offline with a valid lease, the model opens.
-- **When Quran Lab cannot be reached.** If the lease has ended and Quran Lab cannot be reached (no answer, a server
-  error, or "too many requests"), the model keeps opening under that lease for up to 24 hours more. A refusal from
-  Quran Lab ends this at once. A model open
-  past the end of the lease first asks Quran Lab for a new one and waits at most 10 seconds, and not at all when the
-  device is offline. Each such open is reported to Quran Lab; your app gets no error.
-- **After that**, `client.model()` throws a `TajweedError` until a new lease comes: `TajweedErrorCode.needsConnection`
-  when Quran Lab gave no answer, `TajweedErrorCode.downloadFailed` when it answered with a server error.
-- **A model already open keeps running** until it is closed, past the end of its lease too.
+- **A lease per install.** The model opens under a lease Quran Lab signs for this install. The first run needs a
+  connection; after that the model works offline. When the device is online the native SDK keeps itself up to date
+  in the background, and opening the model never waits for that.
+- **`TajweedErrorCode.needsConnection`** from `client.model()` means the SDK needs to reach Quran Lab to continue;
+  an answer from a server that is a failure is `TajweedErrorCode.downloadFailed`.
+- **A model already open keeps running** until it is closed.
 - **Refusals.** When Quran Lab stops a key or an app, the native SDK removes the model, as in 3.x, but only when its
   Core verified the signed refusal.
 
@@ -79,7 +74,7 @@ The plugin passes the native SDK's error through unchanged, and the catalogue is
 | What happened | Code |
 | --- | --- |
 | A request the call needs got no answer at all (offline, DNS, a refused connection) and nothing of the model is on the device yet | `needsConnection` |
-| The lease and its 24 hours above have ended, and Quran Lab gave no answer | `needsConnection` |
+| The SDK needs to reach Quran Lab to continue, and Quran Lab gave no answer | `needsConnection` |
 | Quran Lab answered with a failure: a server error, a 429, a redirect | `downloadFailed`; the message names what answered. Call again later |
 | Quran Lab refused the key or the app | `invalidKey`, or `serverRejected` with the reason, as in 3.x |
 
@@ -87,6 +82,11 @@ The native SDKs also send Quran Lab a small report of each error your app gets a
 without telling it: where it failed, why, how often that day, and the device's model code and memory tier. Never a
 message, a path, a URL or an identifier. Your app's page at sdk.quranlab.ai lists them under Problems. Nothing to do in
 Dart.
+
+From 4.0.2 the error your app gets carries the same words as its report: `error.cause` (`TajweedErrorCause`: `stage`,
+`reason`, `httpStatus`, `errorName`, `errorCode`). On `needsConnection`, `cause.needs` is `model` when the model files
+are not on the device yet (connect to download them) and `lease` when the model is on the device and needs Quran Lab's
+answer to open (connect to continue).
 
 ## Sharing
 

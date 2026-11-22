@@ -257,11 +257,13 @@ void main() {
       models.renameSync(hold.path);
       File(models.path).writeAsStringSync('e2e: a file where the SDK keeps its models folder');
       String code;
+      TajweedErrorCause? cause;
       try {
         await client.prefetch();
         code = 'none';
       } on TajweedError catch (err) {
         code = err.code;
+        cause = err.cause;
       } finally {
         // The SDK may make the folder again meanwhile (the config's recommended build, written beside the builds): what
         // it wrote goes into the held folder (newer over older), and the held folder is the models folder again.
@@ -286,20 +288,32 @@ void main() {
         'at': at.toIso8601String(),
         'by': 'storage',
         'restored': !hold.existsSync() && models.existsSync(),
+        'cause': '$cause',
       });
       expect(code, TajweedErrorCode.storageFailed);
+      // 4.0.2: a reported error carries its cause across the channel, the native SDK's tokens
+      expect(cause, isNotNull);
+      expect(['storage', 'download'], contains(cause!.stage));
+      expect(cause.needs, isNull);
       await Future<void>.delayed(const Duration(seconds: 45));
       final d2 = await client.diagnose();
       report('error_sent_window', {'last_error': d2.lastError, 'waited_s': 45});
     }
     if (File('${dir.path}/deny_microphone').existsSync()) {
       final at = DateTime.now().toUtc();
+      TajweedErrorCause? cause;
       final code = await model.listen().then<String>((s) async {
         await s.cancel();
         return 'none';
-      }, onError: (Object err) => err is TajweedError ? err.code : '$err');
-      report('error', {'code': code, 'at': at.toIso8601String()});
+      }, onError: (Object err) {
+        if (err is! TajweedError) return '$err';
+        cause = err.cause;
+        return err.code;
+      });
+      report('error', {'code': code, 'at': at.toIso8601String(), 'cause': '$cause'});
       expect(code, TajweedErrorCode.microphoneDenied);
+      expect(cause?.stage, 'audio');
+      expect(cause?.reason, 'permission_denied');
       // the report goes out 30 s after a new occurrence while the app is in front
       await Future<void>.delayed(const Duration(seconds: 45));
       final after = await client.diagnose();

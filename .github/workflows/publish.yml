@@ -1,48 +1,48 @@
 name: Publish to pub.dev
 
-# pub.dev's automated publishing: a tag quranlab_tajweedformer-v<version> or quranlab_tajweedformer_record-v<version>
-# publishes that package's version, once the package's Admin tab on pub.dev names this repository and the tag pattern.
-# The version in the package's pubspec.yaml must equal the tag's. dart-lang/setup-dart sets up pub.dev's credentials
-# from GitHub's OIDC token (no secret in this repository); the packages are Flutter packages, so Flutter publishes.
+# pub.dev's automated publishing (GitHub's OIDC token, no secret anywhere): a tag v<version> publishes both packages
+# at that version, quranlab_tajweedformer first, then quranlab_tajweedformer_record. Each package's Admin tab on
+# pub.dev, under Automated publishing, names this repository (Quran-Lab/tajweedformer-flutter) and the tag pattern
+# v{{version}}. Both pubspec.yaml files must carry the tag's version, and the jobs run only in this repository. A job
+# that fails after the plugin was published is re-run on its own (Re-run failed jobs); the tag is never pushed again.
 on:
   push:
     tags:
-      - 'quranlab_tajweedformer-v[0-9]+.[0-9]+.[0-9]+'
-      - 'quranlab_tajweedformer_record-v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 permissions:
   contents: read
 
 jobs:
-  publish:
+  check:
+    name: Both pubspecs carry the tag's version
+    if: github.repository == 'Quran-Lab/tajweedformer-flutter'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v4
-      - uses: dart-lang/setup-dart@v1
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          flutter-version: "3.50.0"
-      - name: The package the tag names
-        id: pkg
-        run: |
-          case "$GITHUB_REF_NAME" in
-            quranlab_tajweedformer_record-v*) echo "dir=packages/quranlab_tajweedformer_record" >> "$GITHUB_OUTPUT"; v="${GITHUB_REF_NAME#quranlab_tajweedformer_record-v}";;
-            quranlab_tajweedformer-v*) echo "dir=packages/quranlab_tajweedformer" >> "$GITHUB_OUTPUT"; v="${GITHUB_REF_NAME#quranlab_tajweedformer-v}";;
-            *) echo "::error::not a package tag"; exit 1;;
-          esac
-          echo "version=$v" >> "$GITHUB_OUTPUT"
-      - name: The pubspec's version is the tag's
-        working-directory: ${{ steps.pkg.outputs.dir }}
+      - name: Versions
         env:
-          WANT: ${{ steps.pkg.outputs.version }}
+          TAG: ${{ github.ref_name }}
         run: |
-          grep -qx "version: $WANT" pubspec.yaml || { echo "::error::pubspec.yaml is not version $WANT"; exit 1; }
-      - name: Publish
-        working-directory: ${{ steps.pkg.outputs.dir }}
-        run: |
-          flutter pub get
-          flutter pub publish --force
+          v="${TAG#v}"
+          for p in packages/quranlab_tajweedformer packages/quranlab_tajweedformer_record; do
+            grep -qx "version: $v" "$p/pubspec.yaml" || { echo "::error::$p/pubspec.yaml is not version $v"; exit 1; }
+          done
+
+  plugin:
+    name: quranlab_tajweedformer
+    needs: check
+    permissions:
+      id-token: write
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+    with:
+      working-directory: packages/quranlab_tajweedformer
+
+  record:
+    name: quranlab_tajweedformer_record
+    needs: plugin
+    permissions:
+      id-token: write
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+    with:
+      working-directory: packages/quranlab_tajweedformer_record

@@ -6,15 +6,17 @@
 import Foundation
 import PackageDescription
 
-// The Apple SDK: the Swift package tajweedformer-apple, any 4.x from 4.0.0, through its public API only (the Core comes
-// inside it as a binary target). QURANLAB_APPLE_SDK=<folder> builds against a local copy of that package instead, with
-// its QuranLabCore.xcframework, before a release or for a Core under test. The folder's name is
-// the package's identity in SwiftPM, so it must be named tajweedformer-apple.
+// The Apple SDK: the Swift package tajweedformer-apple, EXACTLY this version, through its public API only (the Core
+// comes inside it as a binary target). The plugin is built and tested against it, as on Android: change it only
+// together with a build and the plugin's tests against the new version (4.0.0 took any later 4.x).
+// QURANLAB_APPLE_SDK=<folder> builds against a local copy of that package instead, with its
+// QuranLabCore.xcframework, before a release or for a Core under test. The folder's name is the package's identity in
+// SwiftPM, so it must be named tajweedformer-apple.
 let appleSDK: Package.Dependency = {
     if let folder = ProcessInfo.processInfo.environment["QURANLAB_APPLE_SDK"], !folder.isEmpty {
         return .package(path: folder)
     }
-    return .package(url: "https://github.com/Quran-Lab/tajweedformer-apple", from: "4.0.0")
+    return .package(url: "https://github.com/Quran-Lab/tajweedformer-apple", exact: "4.0.2")
 }()
 
 let package = Package(

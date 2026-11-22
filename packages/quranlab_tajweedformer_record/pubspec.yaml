@@ -2,7 +2,7 @@ name: quranlab_tajweedformer_record
 description: >-
   An optional microphone for quranlab_tajweedformer: captures 16 kHz mono PCM with the record package and pushes
   it into a TajweedFormer take.
-version: 4.0.0
+version: 4.0.2
 homepage: https://sdk.quranlab.ai
 repository: https://github.com/Quran-Lab/tajweedformer-flutter
 issue_tracker: https://github.com/Quran-Lab/tajweedformer-flutter/issues

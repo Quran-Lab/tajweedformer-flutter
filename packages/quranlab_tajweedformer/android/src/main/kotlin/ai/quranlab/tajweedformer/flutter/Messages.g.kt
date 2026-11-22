@@ -803,12 +803,76 @@ data class ChunkMessage (
   }
 }
 
+/**
+ * What failed, as the native error carries it (Android `TajweedError.errorCause`, Apple `TajweedError.cause`;
+ * contract 24.13): the tokens of the SDK's report of the same failure.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class ErrorCauseMessage (
+  val stage: String,
+  val reason: String,
+  val httpStatus: Long? = null,
+  val errorName: String? = null,
+  val errorCode: String? = null,
+  /** needs_connection only: `model` or `lease` */
+  val needs: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): ErrorCauseMessage {
+      val stage = pigeonVar_list[0] as String
+      val reason = pigeonVar_list[1] as String
+      val httpStatus = pigeonVar_list[2] as Long?
+      val errorName = pigeonVar_list[3] as String?
+      val errorCode = pigeonVar_list[4] as String?
+      val needs = pigeonVar_list[5] as String?
+      return ErrorCauseMessage(stage, reason, httpStatus, errorName, errorCode, needs)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      stage,
+      reason,
+      httpStatus,
+      errorName,
+      errorCode,
+      needs,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as ErrorCauseMessage
+    return MessagesPigeonUtils.deepEquals(this.stage, other.stage) && MessagesPigeonUtils.deepEquals(this.reason, other.reason) && MessagesPigeonUtils.deepEquals(this.httpStatus, other.httpStatus) && MessagesPigeonUtils.deepEquals(this.errorName, other.errorName) && MessagesPigeonUtils.deepEquals(this.errorCode, other.errorCode) && MessagesPigeonUtils.deepEquals(this.needs, other.needs)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.stage)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.reason)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.httpStatus)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.errorName)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.errorCode)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.needs)
+    return result
+  }
+  override fun toString(): String {
+    return "ErrorCauseMessage(stage=$stage, reason=$reason, httpStatus=$httpStatus, errorName=$errorName, errorCode=$errorCode, needs=$needs)"
+  }
+}
+
 /** Generated class from Pigeon that represents data sent in messages. */
 data class ErrorMessage (
   val code: String,
   val message: String,
   val fix: String,
-  val docs: String
+  val docs: String,
+  val cause: ErrorCauseMessage? = null
 )
  {
   companion object {
@@ -817,7 +881,8 @@ data class ErrorMessage (
       val message = pigeonVar_list[1] as String
       val fix = pigeonVar_list[2] as String
       val docs = pigeonVar_list[3] as String
-      return ErrorMessage(code, message, fix, docs)
+      val cause = pigeonVar_list[4] as ErrorCauseMessage?
+      return ErrorMessage(code, message, fix, docs, cause)
     }
   }
   fun toList(): List<Any?> {
@@ -826,6 +891,7 @@ data class ErrorMessage (
       message,
       fix,
       docs,
+      cause,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -836,7 +902,7 @@ data class ErrorMessage (
       return true
     }
     val other = other as ErrorMessage
-    return MessagesPigeonUtils.deepEquals(this.code, other.code) && MessagesPigeonUtils.deepEquals(this.message, other.message) && MessagesPigeonUtils.deepEquals(this.fix, other.fix) && MessagesPigeonUtils.deepEquals(this.docs, other.docs)
+    return MessagesPigeonUtils.deepEquals(this.code, other.code) && MessagesPigeonUtils.deepEquals(this.message, other.message) && MessagesPigeonUtils.deepEquals(this.fix, other.fix) && MessagesPigeonUtils.deepEquals(this.docs, other.docs) && MessagesPigeonUtils.deepEquals(this.cause, other.cause)
   }
 
   override fun hashCode(): Int {
@@ -845,10 +911,11 @@ data class ErrorMessage (
     result = 31 * result + MessagesPigeonUtils.deepHash(this.message)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.fix)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.docs)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.cause)
     return result
   }
   override fun toString(): String {
-    return "ErrorMessage(code=$code, message=$message, fix=$fix, docs=$docs)"
+    return "ErrorMessage(code=$code, message=$message, fix=$fix, docs=$docs, cause=$cause)"
   }
 }
 
@@ -1587,75 +1654,80 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
       }
       139.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          ErrorMessage.fromList(it)
+          ErrorCauseMessage.fromList(it)
         }
       }
       140.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          EventMessage.fromList(it)
+          ErrorMessage.fromList(it)
         }
       }
       141.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          HeadsMessage.fromList(it)
+          EventMessage.fromList(it)
         }
       }
       142.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          StoredModelMessage.fromList(it)
+          HeadsMessage.fromList(it)
         }
       }
       143.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          StorageMessage.fromList(it)
+          StoredModelMessage.fromList(it)
         }
       }
       144.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          UnitsMessage.fromList(it)
+          StorageMessage.fromList(it)
         }
       }
       145.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          SharingStateMessage.fromList(it)
+          UnitsMessage.fromList(it)
         }
       }
       146.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          SharingItemMessage.fromList(it)
+          SharingStateMessage.fromList(it)
         }
       }
       147.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          SharingSummaryMessage.fromList(it)
+          SharingItemMessage.fromList(it)
         }
       }
       148.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          RecitedOutcomeMessage.fromList(it)
+          SharingSummaryMessage.fromList(it)
         }
       }
       149.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          SharingThemeMessage.fromList(it)
+          RecitedOutcomeMessage.fromList(it)
         }
       }
       150.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          ChunkUpdate.fromList(it)
+          SharingThemeMessage.fromList(it)
         }
       }
       151.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          EventUpdate.fromList(it)
+          ChunkUpdate.fromList(it)
         }
       }
       152.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          ClosedUpdate.fromList(it)
+          EventUpdate.fromList(it)
         }
       }
       153.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          ClosedUpdate.fromList(it)
+        }
+      }
+      154.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
           ProgressUpdate.fromList(it)
         }
@@ -1705,64 +1777,68 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is ErrorMessage -> {
+      is ErrorCauseMessage -> {
         stream.write(139)
         writeValue(stream, value.toList())
       }
-      is EventMessage -> {
+      is ErrorMessage -> {
         stream.write(140)
         writeValue(stream, value.toList())
       }
-      is HeadsMessage -> {
+      is EventMessage -> {
         stream.write(141)
         writeValue(stream, value.toList())
       }
-      is StoredModelMessage -> {
+      is HeadsMessage -> {
         stream.write(142)
         writeValue(stream, value.toList())
       }
-      is StorageMessage -> {
+      is StoredModelMessage -> {
         stream.write(143)
         writeValue(stream, value.toList())
       }
-      is UnitsMessage -> {
+      is StorageMessage -> {
         stream.write(144)
         writeValue(stream, value.toList())
       }
-      is SharingStateMessage -> {
+      is UnitsMessage -> {
         stream.write(145)
         writeValue(stream, value.toList())
       }
-      is SharingItemMessage -> {
+      is SharingStateMessage -> {
         stream.write(146)
         writeValue(stream, value.toList())
       }
-      is SharingSummaryMessage -> {
+      is SharingItemMessage -> {
         stream.write(147)
         writeValue(stream, value.toList())
       }
-      is RecitedOutcomeMessage -> {
+      is SharingSummaryMessage -> {
         stream.write(148)
         writeValue(stream, value.toList())
       }
-      is SharingThemeMessage -> {
+      is RecitedOutcomeMessage -> {
         stream.write(149)
         writeValue(stream, value.toList())
       }
-      is ChunkUpdate -> {
+      is SharingThemeMessage -> {
         stream.write(150)
         writeValue(stream, value.toList())
       }
-      is EventUpdate -> {
+      is ChunkUpdate -> {
         stream.write(151)
         writeValue(stream, value.toList())
       }
-      is ClosedUpdate -> {
+      is EventUpdate -> {
         stream.write(152)
         writeValue(stream, value.toList())
       }
-      is ProgressUpdate -> {
+      is ClosedUpdate -> {
         stream.write(153)
+        writeValue(stream, value.toList())
+      }
+      is ProgressUpdate -> {
+        stream.write(154)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -1783,7 +1859,7 @@ interface TajweedHostApi {
   suspend fun closeClient()
   /** Downloads (reporting to [progressId] when it is set), verifies and opens the model. */
   suspend fun model(version: String?, progressId: Long?): ModelMessage
-  suspend fun prefetch(unmeteredOnly: Boolean, progressId: Long?)
+  suspend fun prefetch(progressId: Long?)
   suspend fun storage(): StorageMessage
   suspend fun removeModels()
   /** The SDK's diagnosis as JSON, the same fields on both platforms. */
@@ -1895,11 +1971,10 @@ interface TajweedHostApi {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val unmeteredOnlyArg = args[0] as Boolean
-            val progressIdArg = args[1] as Long?
+            val progressIdArg = args[0] as Long?
             CoroutineScope(Dispatchers.Main).launch {
               val wrapped: List<Any?> = try {
-                api.prefetch(unmeteredOnlyArg, progressIdArg)
+                api.prefetch(progressIdArg)
                 listOf(null)
               } catch (exception: Throwable) {
                 MessagesPigeonUtils.wrapError(exception)

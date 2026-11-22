@@ -824,12 +824,77 @@ struct ChunkMessage: Hashable, CustomStringConvertible {
   }
 }
 
+/// What failed, as the native error carries it (Android `TajweedError.errorCause`, Apple `TajweedError.cause`;
+/// contract 24.13): the tokens of the SDK's report of the same failure.
+///
+/// Generated class from Pigeon that represents data sent in messages.
+struct ErrorCauseMessage: Hashable, CustomStringConvertible {
+  var stage: String
+  var reason: String
+  var httpStatus: Int64? = nil
+  var errorName: String? = nil
+  var errorCode: String? = nil
+  /// needs_connection only: `model` or `lease`
+  var needs: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> ErrorCauseMessage? {
+    let stage = pigeonVar_list[0] as! String
+    let reason = pigeonVar_list[1] as! String
+    let httpStatus: Int64? = nilOrValue(pigeonVar_list[2])
+    let errorName: String? = nilOrValue(pigeonVar_list[3])
+    let errorCode: String? = nilOrValue(pigeonVar_list[4])
+    let needs: String? = nilOrValue(pigeonVar_list[5])
+
+    return ErrorCauseMessage(
+      stage: stage,
+      reason: reason,
+      httpStatus: httpStatus,
+      errorName: errorName,
+      errorCode: errorCode,
+      needs: needs
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      stage,
+      reason,
+      httpStatus,
+      errorName,
+      errorCode,
+      needs,
+    ]
+  }
+  static func == (lhs: ErrorCauseMessage, rhs: ErrorCauseMessage) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return MessagesPigeonInternal.deepEquals(lhs.stage, rhs.stage) && MessagesPigeonInternal.deepEquals(lhs.reason, rhs.reason) && MessagesPigeonInternal.deepEquals(lhs.httpStatus, rhs.httpStatus) && MessagesPigeonInternal.deepEquals(lhs.errorName, rhs.errorName) && MessagesPigeonInternal.deepEquals(lhs.errorCode, rhs.errorCode) && MessagesPigeonInternal.deepEquals(lhs.needs, rhs.needs)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("ErrorCauseMessage")
+    MessagesPigeonInternal.deepHash(value: stage, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: reason, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: httpStatus, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: errorName, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: errorCode, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: needs, hasher: &hasher)
+  }
+
+  public var description: String {
+    return "ErrorCauseMessage(stage: \(String(describing: stage)), reason: \(String(describing: reason)), httpStatus: \(String(describing: httpStatus)), errorName: \(String(describing: errorName)), errorCode: \(String(describing: errorCode)), needs: \(String(describing: needs)))"
+  }
+}
+
 /// Generated class from Pigeon that represents data sent in messages.
 struct ErrorMessage: Hashable, CustomStringConvertible {
   var code: String
   var message: String
   var fix: String
   var docs: String
+  var cause: ErrorCauseMessage? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -838,12 +903,14 @@ struct ErrorMessage: Hashable, CustomStringConvertible {
     let message = pigeonVar_list[1] as! String
     let fix = pigeonVar_list[2] as! String
     let docs = pigeonVar_list[3] as! String
+    let cause: ErrorCauseMessage? = nilOrValue(pigeonVar_list[4])
 
     return ErrorMessage(
       code: code,
       message: message,
       fix: fix,
-      docs: docs
+      docs: docs,
+      cause: cause
     )
   }
   func toList() -> [Any?] {
@@ -852,13 +919,14 @@ struct ErrorMessage: Hashable, CustomStringConvertible {
       message,
       fix,
       docs,
+      cause,
     ]
   }
   static func == (lhs: ErrorMessage, rhs: ErrorMessage) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return MessagesPigeonInternal.deepEquals(lhs.code, rhs.code) && MessagesPigeonInternal.deepEquals(lhs.message, rhs.message) && MessagesPigeonInternal.deepEquals(lhs.fix, rhs.fix) && MessagesPigeonInternal.deepEquals(lhs.docs, rhs.docs)
+    return MessagesPigeonInternal.deepEquals(lhs.code, rhs.code) && MessagesPigeonInternal.deepEquals(lhs.message, rhs.message) && MessagesPigeonInternal.deepEquals(lhs.fix, rhs.fix) && MessagesPigeonInternal.deepEquals(lhs.docs, rhs.docs) && MessagesPigeonInternal.deepEquals(lhs.cause, rhs.cause)
   }
 
   func hash(into hasher: inout Hasher) {
@@ -867,10 +935,11 @@ struct ErrorMessage: Hashable, CustomStringConvertible {
     MessagesPigeonInternal.deepHash(value: message, hasher: &hasher)
     MessagesPigeonInternal.deepHash(value: fix, hasher: &hasher)
     MessagesPigeonInternal.deepHash(value: docs, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: cause, hasher: &hasher)
   }
 
   public var description: String {
-    return "ErrorMessage(code: \(String(describing: code)), message: \(String(describing: message)), fix: \(String(describing: fix)), docs: \(String(describing: docs)))"
+    return "ErrorMessage(code: \(String(describing: code)), message: \(String(describing: message)), fix: \(String(describing: fix)), docs: \(String(describing: docs)), cause: \(String(describing: cause)))"
   }
 }
 
@@ -1585,34 +1654,36 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
     case 138:
       return ChunkMessage.fromList(self.readValue() as! [Any?])
     case 139:
-      return ErrorMessage.fromList(self.readValue() as! [Any?])
+      return ErrorCauseMessage.fromList(self.readValue() as! [Any?])
     case 140:
-      return EventMessage.fromList(self.readValue() as! [Any?])
+      return ErrorMessage.fromList(self.readValue() as! [Any?])
     case 141:
-      return HeadsMessage.fromList(self.readValue() as! [Any?])
+      return EventMessage.fromList(self.readValue() as! [Any?])
     case 142:
-      return StoredModelMessage.fromList(self.readValue() as! [Any?])
+      return HeadsMessage.fromList(self.readValue() as! [Any?])
     case 143:
-      return StorageMessage.fromList(self.readValue() as! [Any?])
+      return StoredModelMessage.fromList(self.readValue() as! [Any?])
     case 144:
-      return UnitsMessage.fromList(self.readValue() as! [Any?])
+      return StorageMessage.fromList(self.readValue() as! [Any?])
     case 145:
-      return SharingStateMessage.fromList(self.readValue() as! [Any?])
+      return UnitsMessage.fromList(self.readValue() as! [Any?])
     case 146:
-      return SharingItemMessage.fromList(self.readValue() as! [Any?])
+      return SharingStateMessage.fromList(self.readValue() as! [Any?])
     case 147:
-      return SharingSummaryMessage.fromList(self.readValue() as! [Any?])
+      return SharingItemMessage.fromList(self.readValue() as! [Any?])
     case 148:
-      return RecitedOutcomeMessage.fromList(self.readValue() as! [Any?])
+      return SharingSummaryMessage.fromList(self.readValue() as! [Any?])
     case 149:
-      return SharingThemeMessage.fromList(self.readValue() as! [Any?])
+      return RecitedOutcomeMessage.fromList(self.readValue() as! [Any?])
     case 150:
-      return ChunkUpdate.fromList(self.readValue() as! [Any?])
+      return SharingThemeMessage.fromList(self.readValue() as! [Any?])
     case 151:
-      return EventUpdate.fromList(self.readValue() as! [Any?])
+      return ChunkUpdate.fromList(self.readValue() as! [Any?])
     case 152:
-      return ClosedUpdate.fromList(self.readValue() as! [Any?])
+      return EventUpdate.fromList(self.readValue() as! [Any?])
     case 153:
+      return ClosedUpdate.fromList(self.readValue() as! [Any?])
+    case 154:
       return ProgressUpdate.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -1652,50 +1723,53 @@ private class MessagesPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? ChunkMessage {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? ErrorMessage {
+    } else if let value = value as? ErrorCauseMessage {
       super.writeByte(139)
       super.writeValue(value.toList())
-    } else if let value = value as? EventMessage {
+    } else if let value = value as? ErrorMessage {
       super.writeByte(140)
       super.writeValue(value.toList())
-    } else if let value = value as? HeadsMessage {
+    } else if let value = value as? EventMessage {
       super.writeByte(141)
       super.writeValue(value.toList())
-    } else if let value = value as? StoredModelMessage {
+    } else if let value = value as? HeadsMessage {
       super.writeByte(142)
       super.writeValue(value.toList())
-    } else if let value = value as? StorageMessage {
+    } else if let value = value as? StoredModelMessage {
       super.writeByte(143)
       super.writeValue(value.toList())
-    } else if let value = value as? UnitsMessage {
+    } else if let value = value as? StorageMessage {
       super.writeByte(144)
       super.writeValue(value.toList())
-    } else if let value = value as? SharingStateMessage {
+    } else if let value = value as? UnitsMessage {
       super.writeByte(145)
       super.writeValue(value.toList())
-    } else if let value = value as? SharingItemMessage {
+    } else if let value = value as? SharingStateMessage {
       super.writeByte(146)
       super.writeValue(value.toList())
-    } else if let value = value as? SharingSummaryMessage {
+    } else if let value = value as? SharingItemMessage {
       super.writeByte(147)
       super.writeValue(value.toList())
-    } else if let value = value as? RecitedOutcomeMessage {
+    } else if let value = value as? SharingSummaryMessage {
       super.writeByte(148)
       super.writeValue(value.toList())
-    } else if let value = value as? SharingThemeMessage {
+    } else if let value = value as? RecitedOutcomeMessage {
       super.writeByte(149)
       super.writeValue(value.toList())
-    } else if let value = value as? ChunkUpdate {
+    } else if let value = value as? SharingThemeMessage {
       super.writeByte(150)
       super.writeValue(value.toList())
-    } else if let value = value as? EventUpdate {
+    } else if let value = value as? ChunkUpdate {
       super.writeByte(151)
       super.writeValue(value.toList())
-    } else if let value = value as? ClosedUpdate {
+    } else if let value = value as? EventUpdate {
       super.writeByte(152)
       super.writeValue(value.toList())
-    } else if let value = value as? ProgressUpdate {
+    } else if let value = value as? ClosedUpdate {
       super.writeByte(153)
+      super.writeValue(value.toList())
+    } else if let value = value as? ProgressUpdate {
+      super.writeByte(154)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -1728,7 +1802,7 @@ protocol TajweedHostApi {
   func closeClient() async throws
   /// Downloads (reporting to [progressId] when it is set), verifies and opens the model.
   func model(version: String?, progressId: Int64?) async throws -> ModelMessage
-  func prefetch(unmeteredOnly: Bool, progressId: Int64?) async throws
+  func prefetch(progressId: Int64?) async throws
   func storage() async throws -> StorageMessage
   func removeModels() async throws
   /// The SDK's diagnosis as JSON, the same fields on both platforms.
@@ -1828,11 +1902,10 @@ class TajweedHostApiSetup {
     if let api = api {
       prefetchChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
-        let unmeteredOnlyArg = args[0] as! Bool
-        let progressIdArg: Int64? = nilOrValue(args[1])
+        let progressIdArg: Int64? = nilOrValue(args[0])
         Task { @MainActor in
           do {
-            try await api.prefetch(unmeteredOnly: unmeteredOnlyArg, progressId: progressIdArg)
+            try await api.prefetch(progressId: progressIdArg)
             reply(wrapResult(nil))
           } catch {
             reply(wrapError(error))

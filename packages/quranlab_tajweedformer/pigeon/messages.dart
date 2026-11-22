@@ -13,7 +13,8 @@
 //   replace what the Dart side holds for the take. A chunk carries only what changed since the last one, so a
 //   20 minute take does not send its whole history every 320 ms.
 // - Every failure of the native SDK comes back as a PlatformException whose `code` is the SDK's error code and
-//   whose `details` is [fix, docs].
+//   whose `details` is [fix, docs, cause]: cause is the native error's ErrorCauseMessage, or null when it has none
+//  . The plugin's own errors are [fix, docs].
 import 'package:pigeon/pigeon.dart';
 
 @ConfigurePigeon(
@@ -210,12 +211,27 @@ class ChunkMessage {
   DecodedMessage decoded;
 }
 
+/// What failed, as the native error carries it (Android `TajweedError.errorCause`, Apple `TajweedError.cause`;
+/// contract 24.13): the tokens of the SDK's report of the same failure.
+class ErrorCauseMessage {
+  ErrorCauseMessage({required this.stage, required this.reason});
+  String stage;
+  String reason;
+  int? httpStatus;
+  String? errorName;
+  String? errorCode;
+
+  /// needs_connection only: `model` or `lease`
+  String? needs;
+}
+
 class ErrorMessage {
   ErrorMessage({required this.code, required this.message, required this.fix, required this.docs});
   String code;
   String message;
   String fix;
   String docs;
+  ErrorCauseMessage? cause;
 }
 
 class EventMessage {
@@ -376,7 +392,7 @@ abstract class TajweedHostApi {
   ModelMessage model(String? version, int? progressId);
 
   @async
-  void prefetch(bool unmeteredOnly, int? progressId);
+  void prefetch(int? progressId);
 
   @async
   StorageMessage storage();

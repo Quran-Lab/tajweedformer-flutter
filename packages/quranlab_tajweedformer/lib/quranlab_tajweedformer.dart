@@ -15,8 +15,8 @@ library;
 
 export 'src/client.dart'
     show TajweedClient, TajweedClientOptions, TajweedAnalytics, TajweedStorage, TajweedStoredModel, TajweedDiagnosis,
-        TajweedProtectedModel;
-export 'src/errors.dart' show TajweedError, TajweedErrorCode;
+        TajweedProtectedModel, TajweedEndpoints, TajweedFailover;
+export 'src/errors.dart' show TajweedError, TajweedErrorCause, TajweedErrorCode;
 export 'src/model.dart'
     show TajweedModel, TajweedTokens, TajweedClip, TajweedCalibration, TajweedReference, TajweedAyahUnits;
 export 'src/output.dart';

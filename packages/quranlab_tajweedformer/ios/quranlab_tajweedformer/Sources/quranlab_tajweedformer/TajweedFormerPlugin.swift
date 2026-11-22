@@ -221,7 +221,7 @@ public final class TajweedFormerPlugin: NSObject, FlutterPlugin, TajweedHostApi 
         try await sdk {
             let c = try client()
             if let p = progressId, version == nil {
-                try await prefetchWithProgress(c, unmeteredOnly: false, progressId: p)
+                try await prefetchWithProgress(c, progressId: p)
             }
             let m = try await c.model(version: version)
             Host.shared.set(model: m)
@@ -229,22 +229,22 @@ public final class TajweedFormerPlugin: NSObject, FlutterPlugin, TajweedHostApi 
         }
     }
 
-    func prefetch(unmeteredOnly: Bool, progressId: Int64?) async throws {
+    func prefetch(progressId: Int64?) async throws {
         try await sdk {
             let c = try client()
             if let p = progressId {
-                try await prefetchWithProgress(c, unmeteredOnly: unmeteredOnly, progressId: p)
+                try await prefetchWithProgress(c, progressId: p)
             } else {
-                try await c.prefetch(unmeteredOnly: unmeteredOnly)
+                try await c.prefetch()
             }
         }
     }
 
     /// The download with its progress sent to Dart at most every 100 ms, and always at the end.
-    private func prefetchWithProgress(_ c: TajweedClient, unmeteredOnly: Bool, progressId: Int64) async throws {
+    private func prefetchWithProgress(_ c: TajweedClient, progressId: Int64) async throws {
         let emit = emitter()
         let throttle = Throttle(seconds: 0.1)
-        try await c.prefetch(unmeteredOnly: unmeteredOnly, onProgress: { done, total in
+        try await c.prefetch(onProgress: { done, total in
             if throttle.pass(force: done >= total) {
                 emit(ProgressUpdate(callId: progressId, done: done, total: total))
             }

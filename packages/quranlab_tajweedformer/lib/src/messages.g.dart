@@ -837,12 +837,86 @@ class ChunkMessage {
   }
 }
 
+/// What failed, as the native error carries it (Android `TajweedError.errorCause`, Apple `TajweedError.cause`;
+/// contract 24.13): the tokens of the SDK's report of the same failure.
+class ErrorCauseMessage {
+  ErrorCauseMessage({
+    required this.stage,
+    required this.reason,
+    this.httpStatus,
+    this.errorName,
+    this.errorCode,
+    this.needs,
+  });
+
+  String stage;
+
+  String reason;
+
+  int? httpStatus;
+
+  String? errorName;
+
+  String? errorCode;
+
+  /// needs_connection only: `model` or `lease`
+  String? needs;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      stage,
+      reason,
+      httpStatus,
+      errorName,
+      errorCode,
+      needs,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static ErrorCauseMessage decode(Object result) {
+    result as List<Object?>;
+    return ErrorCauseMessage(
+      stage: result[0]! as String,
+      reason: result[1]! as String,
+      httpStatus: result[2] as int?,
+      errorName: result[3] as String?,
+      errorCode: result[4] as String?,
+      needs: result[5] as String?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! ErrorCauseMessage || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(stage, other.stage) && _deepEquals(reason, other.reason) && _deepEquals(httpStatus, other.httpStatus) && _deepEquals(errorName, other.errorName) && _deepEquals(errorCode, other.errorCode) && _deepEquals(needs, other.needs);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'ErrorCauseMessage(stage: $stage, reason: $reason, httpStatus: $httpStatus, errorName: $errorName, errorCode: $errorCode, needs: $needs)';
+  }
+}
+
 class ErrorMessage {
   ErrorMessage({
     required this.code,
     required this.message,
     required this.fix,
     required this.docs,
+    this.cause,
   });
 
   String code;
@@ -853,12 +927,15 @@ class ErrorMessage {
 
   String docs;
 
+  ErrorCauseMessage? cause;
+
   List<Object?> _toList() {
     return <Object?>[
       code,
       message,
       fix,
       docs,
+      cause,
     ];
   }
 
@@ -872,6 +949,7 @@ class ErrorMessage {
       message: result[1]! as String,
       fix: result[2]! as String,
       docs: result[3]! as String,
+      cause: result[4] as ErrorCauseMessage?,
     );
   }
 
@@ -884,7 +962,7 @@ class ErrorMessage {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(code, other.code) && _deepEquals(message, other.message) && _deepEquals(fix, other.fix) && _deepEquals(docs, other.docs);
+    return _deepEquals(code, other.code) && _deepEquals(message, other.message) && _deepEquals(fix, other.fix) && _deepEquals(docs, other.docs) && _deepEquals(cause, other.cause);
   }
 
   @override
@@ -893,7 +971,7 @@ class ErrorMessage {
 
   @override
   String toString() {
-    return 'ErrorMessage(code: $code, message: $message, fix: $fix, docs: $docs)';
+    return 'ErrorMessage(code: $code, message: $message, fix: $fix, docs: $docs, cause: $cause)';
   }
 }
 
@@ -1757,50 +1835,53 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is ChunkMessage) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    }    else if (value is ErrorMessage) {
+    }    else if (value is ErrorCauseMessage) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    }    else if (value is EventMessage) {
+    }    else if (value is ErrorMessage) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    }    else if (value is HeadsMessage) {
+    }    else if (value is EventMessage) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
-    }    else if (value is StoredModelMessage) {
+    }    else if (value is HeadsMessage) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
-    }    else if (value is StorageMessage) {
+    }    else if (value is StoredModelMessage) {
       buffer.putUint8(143);
       writeValue(buffer, value.encode());
-    }    else if (value is UnitsMessage) {
+    }    else if (value is StorageMessage) {
       buffer.putUint8(144);
       writeValue(buffer, value.encode());
-    }    else if (value is SharingStateMessage) {
+    }    else if (value is UnitsMessage) {
       buffer.putUint8(145);
       writeValue(buffer, value.encode());
-    }    else if (value is SharingItemMessage) {
+    }    else if (value is SharingStateMessage) {
       buffer.putUint8(146);
       writeValue(buffer, value.encode());
-    }    else if (value is SharingSummaryMessage) {
+    }    else if (value is SharingItemMessage) {
       buffer.putUint8(147);
       writeValue(buffer, value.encode());
-    }    else if (value is RecitedOutcomeMessage) {
+    }    else if (value is SharingSummaryMessage) {
       buffer.putUint8(148);
       writeValue(buffer, value.encode());
-    }    else if (value is SharingThemeMessage) {
+    }    else if (value is RecitedOutcomeMessage) {
       buffer.putUint8(149);
       writeValue(buffer, value.encode());
-    }    else if (value is ChunkUpdate) {
+    }    else if (value is SharingThemeMessage) {
       buffer.putUint8(150);
       writeValue(buffer, value.encode());
-    }    else if (value is EventUpdate) {
+    }    else if (value is ChunkUpdate) {
       buffer.putUint8(151);
       writeValue(buffer, value.encode());
-    }    else if (value is ClosedUpdate) {
+    }    else if (value is EventUpdate) {
       buffer.putUint8(152);
       writeValue(buffer, value.encode());
-    }    else if (value is ProgressUpdate) {
+    }    else if (value is ClosedUpdate) {
       buffer.putUint8(153);
+      writeValue(buffer, value.encode());
+    }    else if (value is ProgressUpdate) {
+      buffer.putUint8(154);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -1831,34 +1912,36 @@ class _PigeonCodec extends StandardMessageCodec {
       case 138:
         return ChunkMessage.decode(readValue(buffer)!);
       case 139:
-        return ErrorMessage.decode(readValue(buffer)!);
+        return ErrorCauseMessage.decode(readValue(buffer)!);
       case 140:
-        return EventMessage.decode(readValue(buffer)!);
+        return ErrorMessage.decode(readValue(buffer)!);
       case 141:
-        return HeadsMessage.decode(readValue(buffer)!);
+        return EventMessage.decode(readValue(buffer)!);
       case 142:
-        return StoredModelMessage.decode(readValue(buffer)!);
+        return HeadsMessage.decode(readValue(buffer)!);
       case 143:
-        return StorageMessage.decode(readValue(buffer)!);
+        return StoredModelMessage.decode(readValue(buffer)!);
       case 144:
-        return UnitsMessage.decode(readValue(buffer)!);
+        return StorageMessage.decode(readValue(buffer)!);
       case 145:
-        return SharingStateMessage.decode(readValue(buffer)!);
+        return UnitsMessage.decode(readValue(buffer)!);
       case 146:
-        return SharingItemMessage.decode(readValue(buffer)!);
+        return SharingStateMessage.decode(readValue(buffer)!);
       case 147:
-        return SharingSummaryMessage.decode(readValue(buffer)!);
+        return SharingItemMessage.decode(readValue(buffer)!);
       case 148:
-        return RecitedOutcomeMessage.decode(readValue(buffer)!);
+        return SharingSummaryMessage.decode(readValue(buffer)!);
       case 149:
-        return SharingThemeMessage.decode(readValue(buffer)!);
+        return RecitedOutcomeMessage.decode(readValue(buffer)!);
       case 150:
-        return ChunkUpdate.decode(readValue(buffer)!);
+        return SharingThemeMessage.decode(readValue(buffer)!);
       case 151:
-        return EventUpdate.decode(readValue(buffer)!);
+        return ChunkUpdate.decode(readValue(buffer)!);
       case 152:
-        return ClosedUpdate.decode(readValue(buffer)!);
+        return EventUpdate.decode(readValue(buffer)!);
       case 153:
+        return ClosedUpdate.decode(readValue(buffer)!);
+      case 154:
         return ProgressUpdate.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -1940,14 +2023,14 @@ class TajweedHostApi {
     return pigeonVar_replyValue! as ModelMessage;
   }
 
-  Future<void> prefetch(bool unmeteredOnly, int? progressId) async {
+  Future<void> prefetch(int? progressId) async {
     final pigeonVar_channelName = 'dev.flutter.pigeon.quranlab_tajweedformer.TajweedHostApi.prefetch$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[unmeteredOnly, progressId]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[progressId]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     _extractReplyValueOrThrow(
         pigeonVar_replyList,

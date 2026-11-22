@@ -63,9 +63,21 @@ class FakeNative {
   }
 }
 
-/// The SDK's error as the native side sends it: the code, the message, and [fix, docs].
-PlatformException sdkError(String code, String message, String fix) =>
-    PlatformException(code: code, message: message, details: [fix, 'https://sdk.quranlab.ai/docs/errors#$code']);
+/// The SDK's error as the native side sends it: the code, the message, and [fix, docs, cause] (the cause or null).
+PlatformException sdkError(String code, String message, String fix, {ErrorCauseMessage? cause}) =>
+    PlatformException(code: code, message: message, details: [fix, 'https://sdk.quranlab.ai/docs/errors#$code', cause]);
+
+/// A cause of `errors_40.json` (the report's names) as the native side sends it, or null.
+ErrorCauseMessage? causeMessage(Map<String, Object?>? c) => c == null
+    ? null
+    : ErrorCauseMessage(
+        stage: c['stage']! as String,
+        reason: c['reason']! as String,
+        httpStatus: c['http_status'] as int?,
+        errorName: c['error_name'] as String?,
+        errorCode: c['error_code'] as String?,
+        needs: c['needs'] as String?,
+      );
 
 BackendMessage cpu() => BackendMessage(kind: 'cpu', name: 'cpu', stage: 'cpu');
 

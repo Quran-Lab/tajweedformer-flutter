@@ -30,7 +30,7 @@ Everything an assistant needs to integrate this SDK correctly: use only the name
 </td>
 <td valign="top">
 
-**Nothing to host**<br>The SDK downloads the right model for each device (56.5 MB to start) from our CDN in six regions, verifies it and keeps it up to date.
+**Nothing to host**<br>The SDK downloads the right model for each device (56.5 MB to start) from Quran Lab's servers, verifies it and keeps it up to date.
 
 </td>
 <td valign="top">
@@ -56,8 +56,8 @@ Copy the setup prompt from [sdk.quranlab.ai](https://sdk.quranlab.ai) and paste 
 
 - **What it is:** one Flutter plugin, `quranlab_tajweedformer`, for Android and iOS. It is a thin layer over Quran
   Lab's native SDKs 4.0 and carries no copy of either: on Android it depends on Maven `ai.quranlab:tajweedformer`
-  4.0.0, on iOS on the Swift package `Quran-Lab/tajweedformer-apple` (4.0.0 or a later 4.x), and it uses only their
-  public API. The Dart API has the native
+  4.0.2, on iOS on the Swift package `Quran-Lab/tajweedformer-apple` 4.0.2 (exactly these versions, the ones it is
+  built and tested with), and it uses only their public API. The Dart API has the native
   SDKs' names and shapes: a `TajweedClient` (the app's key, one per process), a `TajweedModel` (a verified model
   on the device), a `TajweedSession` (one take), the `TajweedHeads` (the model's output) and the `TajweedBackend`
   (the CPU engine or the device's accelerator). Every failure is one Dart type, `TajweedError`, with the native
@@ -69,9 +69,9 @@ Copy the setup prompt from [sdk.quranlab.ai](https://sdk.quranlab.ai) and paste 
   itself pushes 16-bit or float PCM into `model.session()`. The optional package `quranlab_tajweedformer_record`
   (in `packages/`) does that with the `record` plugin.
 - **The protected model:** the model is encrypted for each install and runs only inside the Quran Lab Core, a
-  closed library in each native SDK, under a lease Quran Lab signs for the install, renewed in the background while
-  the device is online. It keeps working offline while the lease is valid (days at a time, set by Quran Lab), and for
-  up to 24 hours more when Quran Lab cannot be reached. No call gives a model file or its path. See "The lease".
+  closed library in each native SDK, under a lease Quran Lab signs for the install. The first run needs a
+  connection; after that the model works offline, and the SDK keeps itself up to date in the background when the
+  device is online. No call gives a model file or its path. See "The lease".
 - **Recitation sharing:** the native SDK shows Quran Lab's own consent sheet itself, over the Flutter activity on
   Android and the Flutter view controller on iOS. Every learner is asked, and the choice is theirs; there is nothing
   to switch on or off in code.
@@ -93,10 +93,10 @@ Flutter 3.41 or later. On iOS the app uses Flutter's Swift Package Manager integ
 | | |
 | - | - |
 | **Key** | An apps key from [sdk.quranlab.ai](https://sdk.quranlab.ai) for your app's Android package name and iOS bundle id. On the Android emulator and the iOS Simulator, a development key: Quran Lab leases the Core's emulator and Simulator builds to development keys only. |
-| **Android** | Android 8.0 (API 26) or later: `minSdk = 26`. Phones and tablets are `arm64-v8a` and `armeabi-v7a`; `x86_64` runs the CPU engine only, on the emulator and x86 Chromebooks. The plugin brings `ai.quranlab:tajweedformer:4.0.0`; do not add it yourself. On your key's page, under "Signing certificates (SHA-256)", add the app signing key certificate and the upload key certificate: until you do, your installs are not hardware-verified for your app. At 4.0's launch every phone runs the Core's CPU engine. |
+| **Android** | Android 8.0 (API 26) or later: `minSdk = 26`. Phones and tablets are `arm64-v8a` and `armeabi-v7a`; `x86_64` runs the CPU engine only, on the emulator and x86 Chromebooks. The plugin brings `ai.quranlab:tajweedformer:4.0.2`; do not add it yourself. On your key's page, under "Signing certificates (SHA-256)", add the app signing key certificate and the upload key certificate: until you do, your installs are not hardware-verified for your app. At 4.0's launch every phone runs the Core's CPU engine. |
 | **iOS** | iOS 15 or later on Apple silicon (devices and the arm64 simulator), Xcode 16 or later, and Flutter's Swift Package Manager integration (the Apple SDK ships only as a Swift package). `NSMicrophoneUsageDescription` in `Info.plist`. The App Attest capability: with it an install is hardware-verified, may use the Neural Engine, and uploads shared recordings. Exclude x86_64 from Simulator builds (`EXCLUDED_ARCHS[sdk=iphonesimulator*] = x86_64`): the Core is arm64 only. |
 | **Download** | Making the client downloads nothing. The first `client.model()` or `client.prefetch()` downloads the model, encrypted: 56.5 MB, once (73.8 MB on disk), and needs a connection. |
-| **Offline** | The model opens under a lease Quran Lab signs for this install, renewed in the background whenever the device is online: learners keep working offline for days at a time (the exact time is set by Quran Lab and may change). When the lease has ended and Quran Lab cannot be reached, the model keeps opening for up to 24 hours more; a refusal ends that at once. A model that is open keeps running. |
+| **Offline** | The first `client.model()` or `client.prefetch()` needs a connection; after that the model works offline, and the SDK keeps itself up to date in the background when the device is online. `needs_connection` means the SDK needs Quran Lab to continue. A model that is open keeps running. |
 | **Model** | The model runs only inside the Quran Lab Core, which comes with the native SDKs: its files are encrypted from Quran Lab's server to the device, and no plain model file is ever written. When Quran Lab refuses the key or the app, the model's files are removed. |
 | **Analytics** | Anonymous counts and durations (never audio, text, names or device identifiers) and reports of the failures your learners hit are always sent; you find them at sdk.quranlab.ai under your app, Problems included. |
 | **Takes** | A model runs one take at a time; a take holds at most 20 minutes of audio. |
@@ -196,7 +196,8 @@ with no microphone.
   takes `appId`, `appVersion` and `storage`.
 - `client.model(onProgress: (done, total) {...})` gives the model version Quran Lab's signed config recommends for
   this app, downloading and verifying it on the first call and reporting the download's bytes; `version: '4.0.0'`
-  pins a version. `client.prefetch(unmeteredOnly: true)` downloads ahead of use, on Wi-Fi only.
+  pins a version. `client.prefetch()` downloads ahead of use. Downloads use whatever network the device has: nothing
+  waits for Wi-Fi.
 - `model.contexts`, `model.defaultContext` and `model.chunkMs(context)` say which response times the model has;
   `TajweedSessionOptions(context: ...)` picks one for a take.
 - `client.diagnose()` answers "why does it not work" in one object (`.json` for a bug report): the SDK version, the
@@ -208,21 +209,21 @@ with no microphone.
 
 ## The lease
 
-- **A lease per install.** The model opens under a lease Quran Lab signs for this install: learners keep working offline for days at a time; the exact time is set by Quran Lab and may change.
-  While the device is online the native SDK renews it in the background about once a day, and a valid lease never
-  waits for a renewal. Offline with a valid lease, the model opens. An attested install (Android: the phone's hardware
+- **A lease per install.** The model opens under a lease Quran Lab signs for this install. The first run needs a
+  connection; after that the model works offline. When the device is online the native SDK keeps itself up to date
+  in the background, and opening the model never waits for that. An attested install (Android: the phone's hardware
   Key Attestation, or Play Integrity on a phone without it; iOS: App Attest) is hardware-verified, the class that may
   use the device's accelerator.
-- **When Quran Lab cannot be reached.** If the lease has ended and Quran Lab cannot be reached (no answer, a server
-  error, too many requests), the model keeps opening under it for up to 24 hours more. A refusal ends that at once.
-  A model open past the end of the lease first asks for a new one and waits at most 10 seconds. Each such open is
-  reported to Quran Lab; the app gets no error.
-- **After that**, `client.model()` fails until a new lease comes: `needs_connection` when Quran Lab gave no answer,
-  `download_failed` when it answered with a server error. A model already open keeps running until it is closed.
-- There is no option for any of it: what the app sees is the model opening, or the errors above, and
-  `client.diagnose().protectedModel`: where the install's key lives and the lease the Core holds (`valid`, `grace`,
-  `expired`, `stopped` or `none`), its class (`attested` or `standard`), its end, its refresh time and the end of its
-  grace.
+- **`needs_connection`** from `client.model()` means the SDK needs to reach Quran Lab to continue; an answer from a
+  server that is a failure is `download_failed`. A model already open keeps running until it is closed.
+- There is no option for any of it: what the app sees is the model opening, or the errors above.
+  `client.diagnose().protectedModel` says where the install's key lives and the state and class of the lease the
+  Core holds, for support.
+
+## Backup servers
+
+If Quran Lab's main servers can't be reached, the SDK uses backup servers automatically. There is nothing to set;
+`client.diagnose().endpoints` says which servers it is using.
 
 ## Errors
 
@@ -232,9 +233,16 @@ Every failure is a `TajweedError` with a `code` from the one list every Quran La
 plugin passes the native SDK's own error through unchanged, one to one. Catch the one type and show or log the
 message and the fix. On a platform this package does not run on, every call fails with `runtime_unsupported`.
 
+A failure the native SDK reports also carries `cause` (`TajweedErrorCause`): where it failed and why (`stage`,
+`reason`, and `httpStatus`, `errorName` and `errorCode` when there are any), the same words as the report the SDK
+sends Quran Lab. Log it, or send it with a support request. On `needs_connection`, `cause.needs` says what is
+missing: `model`, the model files are not on the device yet (connect to download them); `lease`, the model is on the
+device and needs Quran Lab's answer to open (connect to continue). The five codes that only say the API was used
+wrongly carry no cause.
+
 | What happened | Code |
 | - | - |
-| A request the call needs got no answer at all (offline, DNS, a refused connection) and nothing of the model is on the device yet, or the lease and its 24 hours have ended | `needs_connection` |
+| A request the call needs got no answer at all (offline, DNS, a refused connection): the SDK needs to reach Quran Lab to continue, for example before the model is on the device | `needs_connection` |
 | Quran Lab or the CDN answered with a failure: a server error, a 429, a redirect | `download_failed`; call again later, a download resumes |
 | A downloaded file does not match the signed manifest | `checksum_mismatch` |
 | Quran Lab refused the key or the app | `invalid_key`, `server_rejected` with the reason, or `sdk_too_old` |
@@ -314,7 +322,7 @@ ms; the Dart side rebuilds the whole layer, and a decoded layer the app already 
 ## Build and test
 
 ```sh
-export QURANLAB_MAVEN=<a Maven folder with ai.quranlab:tajweedformer:4.0.0>   # until Maven Central has it
+# optional, for an Android SDK candidate before Maven Central has it: QURANLAB_AAR=<its .aar file>
 cd packages/quranlab_tajweedformer
 flutter pub get
 flutter analyze
@@ -333,9 +341,10 @@ The iOS side builds on a Mac: `flutter build ios --simulator` in `example/`.
 
 ## Status
 
-4.0.0 on pub.dev (`quranlab_tajweedformer` and `quranlab_tajweedformer_record`), over the Android SDK 4.0 and the
-Apple SDK 4.0. The Android side passes its tests and the end-to-end run on the emulator; the iOS side passes the
-end-to-end run on the iOS Simulator and on an iPhone (App Attest, the hardware-verified lease, the Neural Engine).
+4.0.2 on pub.dev (`quranlab_tajweedformer` and `quranlab_tajweedformer_record`), over the Android SDK 4.0.2 and the
+Apple SDK 4.0.2. The plugin builds and passes its tests against both. The 4.0 end-to-end test passed with 4.0.0 on
+the Android emulator, the iOS Simulator and an iPhone (App Attest, the hardware-verified install, the Neural Engine),
+and with 4.0.2 on the iOS Simulator.
 
 Quran Lab encourages, but does not require, one line where your app shows feedback built on the model, for
 example: "Automatic tajweed feedback can be wrong. It does not replace a qualified teacher." Any honest wording
