@@ -4,7 +4,7 @@
 
 <p align="center">
   <img alt="platform: Android, iOS" src="https://img.shields.io/badge/platform-Android%20%7C%20iOS-1c1b19?style=flat-square">
-  <img alt="version: 4.0.3" src="https://img.shields.io/badge/version-4.0.3-2a3b8f?style=flat-square">
+  <img alt="version: 4.0.4" src="https://img.shields.io/badge/version-4.0.4-2a3b8f?style=flat-square">
   <img alt="model licence: NPL-1.3" src="https://img.shields.io/badge/model%20licence-NPL--1.3-1c1b19?style=flat-square">
 </p>
 
@@ -64,8 +64,8 @@ Copy the setup prompt from [sdk.quranlab.ai](https://sdk.quranlab.ai/go/gh-tajwe
 flutter pub add quranlab_tajweedformer
 ```
 
-Flutter 3.41 or later. On iOS the app uses Flutter's Swift Package Manager integration (on by default since Flutter
-3.44): the Apple SDK ships only as a Swift package.
+Flutter 3.44 or later. On iOS the app uses Flutter's Swift Package Manager integration (on by default): the Apple SDK
+ships only as a Swift package.
 
 ## Before you start
 

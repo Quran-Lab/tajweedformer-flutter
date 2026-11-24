@@ -15,7 +15,7 @@ flutter pub add quranlab_tajweedformer
 | | |
 | - | - |
 | **Key** | An apps key from [sdk.quranlab.ai](https://sdk.quranlab.ai) for your app's Android package name and iOS bundle id. |
-| **Flutter** | 3.41 or later. On iOS the app uses Flutter's Swift Package Manager integration (on by default since 3.44): the Apple SDK is a Swift package only. |
+| **Flutter** | 3.44 or later. On iOS the app uses Flutter's Swift Package Manager integration (on by default): the Apple SDK is a Swift package only. |
 | **Android** | Android 8.0 (API 26) or later: `minSdk = 26`. Phones and tablets are `arm64-v8a` and `armeabi-v7a`; `x86_64` runs the CPU engine on emulators, with a development key only. Add your signing certificates on the key's page for hardware-verified installs. |
 | **iOS** | iOS 15 or later on Apple silicon, Xcode 16. `NSMicrophoneUsageDescription` in `Info.plist`. The App Attest capability, for hardware-verified installs, the Neural Engine and shared recordings. A development key on the Simulator. |
 | **Download** | The first `client.model()` downloads the model, about 56 MB once, encrypted for the install. After that the model works offline, and the SDK keeps itself up to date in the background when the device is online. If Quran Lab's main servers can't be reached, the SDK uses backup servers automatically. |

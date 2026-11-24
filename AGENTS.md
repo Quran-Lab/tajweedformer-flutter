@@ -85,8 +85,8 @@ Copy the setup prompt from [sdk.quranlab.ai](https://sdk.quranlab.ai) and paste 
 flutter pub add quranlab_tajweedformer
 ```
 
-Flutter 3.41 or later. On iOS the app uses Flutter's Swift Package Manager integration (on by default since Flutter
-3.44): the Apple SDK ships only as a Swift package.
+Flutter 3.44 or later. On iOS the app uses Flutter's Swift Package Manager integration (on by default): the Apple SDK
+ships only as a Swift package.
 
 ## Before you start
 
@@ -332,6 +332,11 @@ flutter build apk --debug                      # the example app on Android
 cd android && ./gradlew :quranlab_tajweedformer:testDebugUnitTest   # the Kotlin unit tests
 ```
 
+An app's Android Gradle Plugin (AGP), not the example's, is the one the plugin's build file runs under. CI also
+builds the example at the lowest AGP the CI's Flutter accepts and at the newest stable one: `python3
+tool/agp_matrix.py pin --agp newest --gradle newest` sets them (it rewrites the example's Gradle files; its header
+says why and how to check an older Flutter with a fresh app).
+
 `integration_test/e2e_test.dart` is the whole 4.0 path on a device or emulator against Quran Lab's servers (the
 lease, the download, the 35 conformance clips against the Core gate's file, an error report); its header says
 which files it reads from the app's own folder. CI runs everything else on Quran Lab's Linux runner.
@@ -341,8 +346,9 @@ The iOS side builds on a Mac: `flutter build ios --simulator` in `example/`.
 
 ## Status
 
-4.0.3 on pub.dev (`quranlab_tajweedformer` and `quranlab_tajweedformer_record`), over the Android SDK 4.0.2 and the
-Apple SDK 4.0.3. The plugin builds and passes its tests against both. The 4.0 end-to-end test passed with 4.0.0 on
+4.0.4 on pub.dev (`quranlab_tajweedformer` and `quranlab_tajweedformer_record`), over the Android SDK 4.0.2 and the
+Apple SDK 4.0.3. The plugin builds and passes its tests against both, and on Android in apps on the Android Gradle
+Plugin from 8.13 to 9.5. The 4.0 end-to-end test passed with 4.0.0 on
 the Android emulator, the iOS Simulator and an iPhone (App Attest, the hardware-verified install, the Neural Engine),
 and with 4.0.2 on the iOS Simulator.
 

@@ -5,7 +5,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'quranlab_tajweedformer'
-  s.version          = '4.0.3'
+  s.version          = '4.0.4'
   s.summary          = 'TajweedFormer V4 for Flutter (iOS needs Swift Package Manager).'
   s.homepage         = 'https://sdk.quranlab.ai'
   s.license          = { :file => '../LICENSE' }
@@ -15,6 +15,6 @@ Pod::Spec.new do |s|
   raise <<~MSG
     quranlab_tajweedformer needs Flutter's Swift Package Manager integration on iOS: the TajweedFormer SDK
     is a Swift package only. Turn it on with `flutter config --enable-swift-package-manager` (on by default
-    since Flutter 3.44), then run `flutter clean` and build again. Flutter 3.41 or later is needed.
+    since Flutter 3.44), then run `flutter clean` and build again. Flutter 3.44 or later is needed.
   MSG
 end
