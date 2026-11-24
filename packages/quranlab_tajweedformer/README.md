@@ -58,5 +58,5 @@ assistants and just as readable for you. Guides: [sdk.quranlab.ai/docs](https://
 ## Licence
 
 Quran Lab is a waqf: the SDKs and the models are free to use and are never sold. The source code and the
-TajweedFormer model weights are released under the Quran-Lab No-Profit License 1.2 (NPL-1.2): use, copy, modify and
-build on them freely, but never charge for them, for access to them, or for any feature they power.
+TajweedFormer model weights are released under the Quran-Lab No-Profit License 1.3 (NPL-1.3): use, copy, modify and
+build apps on them freely, but never charge for them, for access to them, or for any feature they power. Neither they nor their outputs may be used to train other models.

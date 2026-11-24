@@ -19,4 +19,4 @@ final heads = await mic.stop(); // stops capturing and finishes the take
 `record` needs its own platform setup: `NSMicrophoneUsageDescription` on iOS, `RECORD_AUDIO` on Android (the
 TajweedFormer SDK's manifest already declares it).
 
-Licence: NPL-1.2, as the plugin.
+Licence: NPL-1.3, as the plugin.
