@@ -1,9 +1,18 @@
-## Unreleased
+## 4.0.4
 
-- Licence: from the next release, the SDK and the model are under the Quran-Lab No-Profit License 1.3 (NPL-1.3),
-  which replaces NPL-1.2. NPL-1.3 forbids using the model or its outputs to train other models without Quran Lab's
-  written permission, and TajweedFormer V4 and later models are used only through the SDK. The licence's Changes
-  paragraph lists the rest.
+Over TajweedFormer for Android 4.0.2 and TajweedFormer for iOS and macOS 4.0.3, as 4.0.3. No change is needed in an
+app.
+
+- Android: the plugin now builds in apps on an Android Gradle Plugin older than 9.2: AGP 8, and the 9.0 and 9.1
+  that Flutter 3.44 and 3.47 create apps with. With 4.0.0 to 4.0.3 such a build stopped while Gradle configured the
+  plugin, with `DefaultAndroidSourceSet_Decorated cannot be cast to ... AndroidLibrarySourceSet` at line 63 of the
+  plugin's `android/build.gradle.kts`. The plugin's Kotlin code is unchanged.
+- Flutter 3.44 or later. With Flutter 3.41 the plugin never built on Android (that Flutter does not apply the Kotlin
+  plugin to a plugin's Android project); pub now says so. Apps on 3.41 keep 4.0.3.
+- Licence: the SDK and the model are now under the Quran-Lab No-Profit License 1.3 (NPL-1.3), which replaces
+  NPL-1.2. NPL-1.3 forbids using the model or its outputs to train other models without Quran Lab's written
+  permission, and TajweedFormer V4 and later models are used only through the SDK. The licence's Changes paragraph
+  lists the rest.
 
 ## 4.0.3 (2026-11-22)
 

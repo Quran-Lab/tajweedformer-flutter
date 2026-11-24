@@ -1,5 +1,5 @@
 group = "ai.quranlab.tajweedformer.flutter"
-version = "4.0.3"
+version = "4.0.4"
 
 // The Android SDK this plugin wraps, from Maven Central, through its public API only. EXACTLY this version: the
 // plugin is built and tested against it. Change it only together with a build and the plugin's tests against the new
@@ -59,14 +59,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    sourceSets {
-        getByName("main") {
-            java.srcDirs("src/main/kotlin")
-        }
-        getByName("test") {
-            java.srcDirs("src/test/kotlin")
-        }
-    }
+    // No sourceSets block: src/main/kotlin and src/test/kotlin are the default source folders (AGP's built-in Kotlin
+    // and the Kotlin plugin both use them). Flutter's plugin template had one, written against the AGP on the
+    // buildscript classpath above (9.3.1); in an app on AGP older than 9.2 it threw a ClassCastException
+    // (DefaultAndroidSourceSet_Decorated to AndroidLibrarySourceSet, a 9.2 type) while configuring (4.0.0 to 4.0.3).
+    // tool/agp_matrix.py says how CI checks it.
 
     defaultConfig {
         // the SDK's own minimum (Android 8.0)
