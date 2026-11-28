@@ -1,3 +1,10 @@
+## 4.1.0 (2026-11-28)
+
+With `quranlab_tajweedformer` 4.1.0, which adds Windows, Linux and the web. The helper runs there through `record`'s
+own implementations (Media Foundation on Windows, `parecord` on Linux, the browser's microphone on the web); on Windows
+and Linux it is the plugin's microphone, since `model.listen()` is `runtime_unsupported` there. No change to its API.
+It needs Flutter 3.44 or later, as `record` 7.2 does; the plugin itself runs from Flutter 3.41.
+
 ## 4.0.4
 
 With `quranlab_tajweedformer` 4.0.4, which now builds on Android in apps on an Android Gradle Plugin older than 9.2. No

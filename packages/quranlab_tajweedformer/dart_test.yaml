@@ -1,0 +1,3 @@
+tags:
+  # needs the network: Quran Lab's hosted loader (test/web_loader_live_test.dart, the web CI job)
+  live:

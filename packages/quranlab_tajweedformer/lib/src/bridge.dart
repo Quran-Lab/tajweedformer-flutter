@@ -1,10 +1,15 @@
-// The Dart end of the platform channels: one host API, one stream of updates for every take and download,
-// and the conversions from the wire messages (messages.g.dart) to the public types. Internal.
+// The Dart end of the platform's SDK: one host (host.dart: Pigeon's channels on Android and iOS, the hosted
+// loader on the web, the C SDK on Windows and Linux), one stream of updates for every take and download, and the
+// conversions from the wire messages (messages.g.dart) to the public types. Internal.
 import 'dart:async';
 import 'dart:collection';
 import 'dart:typed_data';
 
+import 'package:meta/meta.dart';
+
 import 'errors.dart';
+import 'host.dart';
+import 'host_select.dart';
 import 'messages.g.dart';
 import 'output.dart';
 
@@ -18,10 +23,21 @@ abstract interface class UpdateSink {
 class Bridge {
   Bridge._();
 
-  /// The one bridge of the isolate. Tests replace nothing here: they answer the channels themselves.
+  /// The one bridge of the isolate. The channel tests replace nothing here: they answer the channels themselves.
   static final Bridge instance = Bridge._();
 
-  final TajweedHostApi api = TajweedHostApi();
+  TajweedHost? _api;
+
+  /// This platform's host, made at the first call.
+  TajweedHost get api => _api ??= platformHost();
+
+  /// Tests only: a host of the test's choosing (the C SDK's in a `flutter test` run on Windows or Linux), set before
+  /// the first call.
+  @visibleForTesting
+  set debugHost(TajweedHost host) {
+    _api = host;
+    _updates = null;
+  }
   StreamSubscription<UpdateMessage>? _updates;
   final Map<int, UpdateSink> _sessions = {};
   final Map<int, void Function(int done, int total)> _progress = {};
@@ -31,7 +47,7 @@ class Bridge {
   int nextId() => _nextId++;
 
   void _listen() {
-    _updates ??= updates().listen(_on, onError: (Object _) {
+    _updates ??= api.updates().listen(_on, onError: (Object _) {
       // a broken stream is not the takes' failure: their calls report their own errors
     }, onDone: () => _updates = null);
   }

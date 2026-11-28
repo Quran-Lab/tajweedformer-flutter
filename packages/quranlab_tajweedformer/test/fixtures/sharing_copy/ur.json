@@ -1,0 +1,138 @@
+{
+ "format": "quranlab.sharing-copy/1",
+ "version": "2026-11-19.1",
+ "lang": "ur",
+ "dir": "rtl",
+ "source_lang": "en",
+ "consent_version": "share-2026-11-09",
+ "delete_days": 0,
+ "delete_timing": "immediate",
+ "strings": {
+  "sheet.title": "اپنی تلاوت سے خیر کا سلسلہ جاری رکھیے",
+  "sheet.body": "جب آپ اپنی تلاوت شیئر کرتے ہیں تو اس سے اس ایپ کے مفت تجوید ماڈل کو بہتر طور پر سننے میں مدد ملتی ہے۔ آپ کے بعد جس بھی سیکھنے والے کی اس سے مدد ہوگی، وہ ان شاء اللہ آپ کی تلاوت مکمل ہو جانے کے بعد بھی ایک مسلسل نیکی بن سکتی ہے: صدقہ جاریہ۔",
+  "sheet.hadith": "نبی کریم صلی اللہ علیہ وسلم نے فرمایا: «جب انسان مر جاتا ہے تو اس کا عمل بھی منقطع ہو جاتا ہے، مگر تین قسم کے عمل (کا ثواب) جاری رہتا ہے۔ صدقۂ جاریہ، یا ایسا علم جس سے اس کے بعد بھی فائدہ اٹھایا جائے، یا نیک اولاد جو اس کے لیے دعا کرے۔»",
+  "sheet.hadith_ref": "صحیح مسلم 1631",
+  "sheet.mistakes": "آپ کی غلطیاں سب سے زیادہ قیمتی ہیں۔ ان سے ماڈل سیکھتا ہے کہ اگلے سیکھنے والے کی نرمی سے کیسے اصلاح کی جائے۔",
+  "sheet.what": "اس ایپ میں آپ کی تلاوت کی آڈیو جب ایپ سن رہی ہو، اور بنیادی تکنیکی تفصیلات جیسے ماڈل کا ورژن اور ڈیوائس کی قسم۔ کوئی نام، رابطے یا لوکیشن شامل نہیں۔",
+  "sheet.who": "Quran Lab، جو کہ ایک وقف ہے۔ اس کے تیار کردہ ماڈلز ہمیشہ سب کے لیے مفت رہیں گے اور کبھی بیچے نہیں جائیں گے۔",
+  "sheet.control": "آپ کسی بھی وقت اسے روک سکتے ہیں اور سیٹنگز سے اپنا شیئر کردہ ڈیٹا ڈیلیٹ کر سکتے ہیں۔",
+  "sheet.share": "میری تلاوتیں شیئر کریں",
+  "sheet.not_now": "ابھی نہیں",
+  "thanks": "جزاکم اللہ خیراً۔ آپ کی تلاوت سے اب دیگر سیکھنے والوں کو مدد مل رہی ہے۔ اللہ تعالیٰ آپ سے قبول فرمائے۔",
+  "settings.toggle": "میری تلاوتیں شیئر کریں",
+  "settings.what": "کیا شیئر کیا جاتا ہے",
+  "settings.delete": "شیئر کردہ مواد مٹائیں",
+  "what.detail": "جب شیئرنگ آن ہو، تو اس ایپ میں آپ کی تلاوت کی آڈیو Quran Lab کو بھیجی جاتی ہے، جس کے ساتھ کچھ بنیادی تکنیکی تفصیلات (ماڈل ورژن، ڈیوائس کی قسم، سسٹم ورژن اور دن) اور اس انسٹالیشن کا ایک بے ترتیب کوڈ شامل ہوتا ہے۔ آپ کا نام، اکاؤنٹ، رابطے، لوکیشن یا ڈیوائس کی ذاتی شناخت کبھی بھی شامل نہیں کی جاتی۔ یہ ڈیٹا EU میں محفوظ کیا جاتا ہے اور اسے صرف تلاوتِ قرآن کے مفت ماڈلز کو بہتر بنانے کے لیے استعمال کیا جاتا ہے۔ شیئرنگ بند کرنے سے اپ لوڈز فوراً رک جاتے ہیں، اور آپ سیٹنگز میں جا کر کسی بھی وقت اپنا شیئر کردہ تمام مواد ڈیلیٹ کر سکتے ہیں: اسے اسی وقت Quran Lab کے سرورز سے مٹا دیا جاتا ہے۔",
+  "delete.confirm": "آپ کی شیئر کردہ تلاوتیں فوراً Quran Lab کے سرورز سے ڈیلیٹ کر دی جائیں گی۔ اس عمل کو واپس نہیں لایا جا سکتا۔",
+  "delete.action": "ڈیلیٹ کریں",
+  "delete.cancel": "منسوخ کریں",
+  "delete.done": "مکمل ہو گیا۔ آپ کا شیئر کردہ مواد Quran Lab کے سرورز سے حذف کر دیا گیا ہے۔ جو کاپیاں ماڈل کی ٹریننگ کے لیے پہلے استعمال ہو چکی ہیں، انہیں آئندہ کی ٹریننگ میں شامل نہیں کیا جائے گا۔",
+  "delete.failed.title": "حذف نہیں ہو سکا",
+  "delete.failed.network": "Quran Lab سے رابطہ نہیں ہو سکا۔ کچھ بھی حذف نہیں ہوا۔ اپنا انٹرنیٹ کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
+  "delete.retry": "دوبارہ کوشش کریں",
+  "recovery.hint": "اگر آپ کی یہ ڈیوائس گم ہو جائے، تو اپنا شیئر کردہ مواد ڈیلیٹ کرنے کے لیے یہ یک وقتی کوڈ اپنے پاس محفوظ رکھیں: portal.quranlab.ai/delete",
+  "recovery.reveal": "ریکوری کوڈ دکھائیں",
+  "recovery.copy": "کاپی کریں",
+  "recovery.copied": "کاپی ہو گیا",
+  "recovery.keep": "اس کوڈ کو محفوظ رکھیں۔ کسی اور ڈیوائس سے اپنا شیئر کردہ مواد حذف کرنے کا یہ واحد طریقہ ہے، اور یہ صرف ایک بار استعمال ہو سکتا ہے۔",
+  "recovery.used": "یہ ریکوری کوڈ پہلے ہی استعمال ہو چکا ہے۔",
+  "recovery.invalid": "یہ کوڈ درست نہیں ہے۔ الفاظ چیک کر کے دوبارہ کوشش کریں۔",
+  "reask": "آج آپ کی تلاوت سے کل کسی اور سیکھنے والے کی مدد ہو سکتی ہے۔ کیا آپ اسے شیئر کرنا چاہیں گے؟",
+  "card.line": "آج آپ کی تلاوت سے کل کسی اور سیکھنے والے کی مدد ہو سکتی ہے۔",
+  "card.open": "دیکھیے کیسے مدد ہوگی",
+  "card.not_now": "ابھی نہیں",
+  "impact.minutes": {
+   "one": "آپ نے تلاوت کا {minutes} منٹ شیئر کیا ہے۔ اللہ تعالیٰ آپ کو جزائے خیر عطا فرمائے۔",
+   "other": "آپ نے تلاوت کے {minutes} منٹ شیئر کیے ہیں۔ اللہ تعالیٰ آپ کو جزائے خیر عطا فرمائے۔"
+  }
+ },
+ "hadith_source": {
+  "collection": "Sahih Muslim",
+  "number": 1631,
+  "url": "https://sunnah.com/muslim:1631",
+  "translation_source": "https://hadeethenc.com/ur/browse/hadith/65566",
+  "translated": false,
+  "verified_at": "2026-11-07",
+  "note": "established translation published by HadeethEnc"
+ },
+ "review": {
+  "back_translation": {
+   "sheet.title": "Continue the chain of good through your recitation",
+   "sheet.body": "When you share your recitation, it helps this app's free Tajweed model listen better. Whichever learner is helped by it after you, that can, in sha Allah, become an ongoing good deed even after your recitation is finished: Sadaqah Jariyah.",
+   "sheet.hadith_ref": "Sahih Muslim 1631",
+   "sheet.mistakes": "Your mistakes are the most valuable. From them, the model learns how to gently correct the next learner.",
+   "sheet.what": "The audio of your recitation in this app when the app is listening, and basic technical details like model version and device type. No name, contacts, or location included.",
+   "sheet.who": "Quran Lab, which is a waqf. The models developed by it will always remain free for everyone and will never be sold.",
+   "sheet.control": "You can stop it at any time and delete your shared data from settings.",
+   "sheet.share": "Share my recitations",
+   "sheet.not_now": "Not now",
+   "thanks": "Jazakum Allahu Khairan. Your recitation is now helping other learners. May Allah Almighty accept from you.",
+   "settings.toggle": "Share my recitations",
+   "settings.what": "What is shared",
+   "settings.delete": "Delete shared content",
+   "what.detail": "When sharing is on, audio of your recitation in this app is sent to Quran Lab, along with some basic technical details (model version, device type, system version, and day), and a random code for this installation. Your name, account, contacts, location, or personal device identifiers are never included. This data is stored in the EU and is used only to improve free Quran recitation models. Turning off sharing stops uploads immediately, and you can delete all your shared content at any time in settings: it is deleted from Quran Lab's servers at that moment.",
+   "delete.confirm": "Your shared recitations will be immediately deleted from Quran Lab's servers. This action cannot be undone.",
+   "delete.action": "Delete",
+   "delete.cancel": "Cancel",
+   "delete.done": "Done. Your shared content has been deleted from Quran Lab's servers. Copies that have already been used for model training will not be included in future training.",
+   "reask": "Your recitation today can help another learner tomorrow. Would you like to share it?",
+   "card.line": "Today, from your recitation, another learner can be helped tomorrow.",
+   "card.open": "See how it will help",
+   "card.not_now": "Not now",
+   "impact.minutes": {
+    "one": "You have shared {minutes} minute of recitation. May Allah Almighty grant you good reward.",
+    "other": "You have shared {minutes} minutes of recitation. May Allah Almighty grant you good reward."
+   },
+   "recovery.hint": "If this device is lost, save this one-time code to delete your shared content: portal.quranlab.ai/delete",
+   "recovery.reveal": "Show recovery code",
+   "recovery.copy": "Copy",
+   "recovery.copied": "Copied",
+   "recovery.keep": "Keep this code safe. This is the only way to delete your shared content from another device, and it can only be used once.",
+   "recovery.used": "This recovery code has already been used.",
+   "recovery.invalid": "This code is not valid. Check the words and try again.",
+   "delete.failed.title": "Could not delete",
+   "delete.failed.network": "Could not connect to Quran Lab. Nothing was deleted. Check your internet connection and try again.",
+   "delete.retry": "Try again"
+  },
+  "back_translation_hadith_intro": "The Prophet (peace and blessings of Allah be upon him) said:",
+  "drift": [
+   {
+    "keys": [
+     "sheet.share",
+     "settings.toggle"
+    ],
+    "found": "\"my\" dropped (\"Share recitation\")",
+    "fixed": "re-translated as \"Share my recitations\"; back-translation checked"
+   },
+   {
+    "keys": [
+     "settings.delete"
+    ],
+    "found": "\"Delete shared recitation\", narrower than \"what I shared\"",
+    "fixed": "re-translated; back-translates as \"Delete shared content\""
+   },
+   {
+    "version": "2026-11-09.1",
+    "change": "removed the recited ayah from sheet.what and what.detail: the SDKs do not send it",
+    "method": "exact phrase removal from the reviewed 2026-11-07.3 text, no re-translation"
+   },
+   {
+    "version": "2026-11-13.1",
+    "change": "the sentence added in 2026-11-12.1 is removed from sheet.who and what.detail; every string is the 2026-11-09.1 string again",
+    "method": "built from the archived 2026-11-09.1 deck: no string was edited"
+   },
+   {
+    "version": "2026-11-15.1",
+    "change": "added card.line, card.open and card.not_now, the re-ask card of SDK 4.0 (sdk_4.0.0/SHARE_ASK_40.md 20.7); every other string is the 2026-11-13.1 string; consent_version unchanged (the card takes no consent)",
+    "method": "card.line and card.open translated by the Quran Lab router (ag/gemini-3.8-flash-high) from the English source with a translator brief (warm, humble, the deck's own voice and form of address, card.line as the reviewed reask's first sentence where it stands alone, card.open no longer than sheet.share and never a consent word), then back-translated to English in a separate call that did not see the English (ag/gemini-3.8-flash-high; ag/gemini-3.8-flash answered 403 that day); card.not_now is this deck's sheet.not_now word for word",
+    "found": "card.line reads back in the passive (\"another learner can be helped\"), as the reviewed reask's first sentence does; card.open reads back \"See how it will help\""
+   },
+   {
+    "version": "2026-11-19.1",
+    "change": "removed sheet.guardian.title, sheet.guardian.body, sheet.guardian.confirm and sheet.guardian.share (owner, 2026-11-19: no children's variant; every app shows the same sheet, sdk_4.0.0/ONE_SHEET_40.md); every other string is the 2026-11-15.1 string; consent_version unchanged",
+    "method": "keys removed from the 2026-11-15.1 deck; no string was edited"
+   }
+  ],
+  "translator_model": "ag/gemini-3.8-flash-high (Quran Lab router); back-translation ag/gemini-3.8-flash"
+ }
+}

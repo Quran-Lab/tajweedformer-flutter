@@ -1,5 +1,62 @@
 # Changelog
 
+## 4.1.0
+
+`quranlab_tajweedformer` 4.1.0 and `quranlab_tajweedformer_record` 4.1.0: Windows, Linux and the web, with the same
+Dart API as on Android and iOS: the same calls, the same messages, the same catalogue of errors. What a platform cannot
+do answers with that catalogue's error, never a silent difference. iOS moves to TajweedFormer for iOS 4.0.5 and Android
+to TajweedFormer for Android 4.0.5. A new platform is a new minor version of the plugin, so 4.1.0 runs over SDKs 4.0.x.
+
+- **Windows** (x64) and **Linux** (x86-64) over TajweedFormer for Windows and Linux (the C SDK) 4.0.3, through
+  `dart:ffi`. Windows bundles the C SDK's release beside the program, checked by SHA-256; Linux builds it from its
+  public source at the release tag (the build machine needs git and the libcurl and OpenSSL 3 development files).
+  Takes, downloads and every call that waits for the network run on the plugin's own isolates, never on the UI's.
+  Use a desktop key; a Windows app without a package identity passes `TajweedClientOptions(appId: ...)`. The model
+  runs on the Core's CPU engine: no Neural Engine, NPU or hardware-verified install there.
+  - `model.listen()` is `runtime_unsupported`: the C SDK has no microphone. `quranlab_tajweedformer_record` is the
+    microphone there, or push your own audio into `model.session()`.
+  - The sharing sheet, its re-ask card and its settings are drawn by the plugin in the app's `Overlay`, from the C
+    SDK's copy deck, in the design every SDK shares; the C SDK's rules decide when an ask comes, and a learner who
+    said yes is never asked again.
+  - `listenFrom(clip)` runs the clip to its end at the clip's pace (`cancel()` and the model's other calls wait until
+    it has ended); `sharing.items()` carries no duration or size; `diagnose().microphone` is `none`.
+- **The web** over Quran Lab's hosted loader, the same one the npm package `@quran-lab/tajweedformer` loads: the model,
+  its lease and its storage live in Quran Lab's frame, exactly as with the web SDK, and the model runs on its CPU
+  engine in WebAssembly. Use a web key that lists your site's origins, and add the web SDK's Content-Security-Policy
+  lines when your site sends one. `TajweedClientOptions.storage` is the web SDK's storage name; a take from
+  `model.listen()` ends with `hidden` when the page is hidden; `client.sharing.ask()` resolves once the learner has
+  answered.
+- **iOS** over TajweedFormer for iOS 4.0.5 (exactly that version):
+  - `model.sampleClips` are the model build's own clips, also without the Neural Engine's build.
+  - A moment without a network, or App Attest not answering, no longer leaves an install unattested for hours, and a
+    model refused with `lease_attestation_required` is asked for again once the install is attested.
+  - An answer from Quran Lab that fails the SDK's checks is `download_failed`, never `needs_connection`, with the
+    check in `error.cause.errorCode` (`cause.reason` `invalid_answer`). `client.diagnose()` adds the install's
+    attestation and the last failure of the model's access.
+  - `model.reference.units()` no longer waits while the Neural Engine's build is prepared; called on the main thread
+    in 4.0.3, it could freeze the app.
+  - Locking the iPhone or switching apps while the Neural Engine's build is prepared is no longer counted as a failure
+    of the build.
+  - A shared recording made at 8 to 24 kHz keeps its last moments.
+- **Android** over TajweedFormer for Android 4.0.5 (exactly that version):
+  - Learners on slow mobile networks get their model. A Quran Lab server that is slow to connect is no longer given
+    up for being slow: the SDK tries another beside it and goes on with whichever connects first, and a request has
+    30 seconds. Offline, a call still fails at once. When no server connected in time, `TajweedError.cause.reason`
+    is `connect_timeout` (apart from `network`).
+  - A download that was cut goes on at the next start, and the attestation holds up on a flaky network.
+  - A client closed while its `model()` call was still opening the model no longer leaves that model open, and the
+    next client on the same storage opens it (4.0.2 could fail with `engine_failed`, `busy`). While another client's
+    model is still closing, `model()` waits up to 3 seconds, off the main thread, and fails with `session_open` if it
+    is still open then.
+- **Flutter 3.41 or later.** The Android build now works in an app made by Flutter 3.41's template (AGP 8.11.1 with
+  the Kotlin Gradle plugin 2.2.20, Gradle 8.14). 4.0.0 to 4.0.4 stopped there with `Unresolved reference: kotlin` in
+  the plugin's `android/build.gradle.kts`, and 4.0.4 asked for Flutter 3.44 (its note that apps on 3.41 keep 4.0.3 was
+  wrong: 4.0.3 stopped the same way). The plugin applies the Kotlin plugin itself only when the app's setup gives it
+  no Kotlin, and builds as before with AGP 9 and its built-in Kotlin.
+- `TajweedClient.create` with a string that is not a Quran Lab key is `invalid_argument` before anything is sent.
+- `quranlab_tajweedformer_record`: runs on Windows, Linux and the web through `record`'s own implementations, and
+  needs `quranlab_tajweedformer` 4.1.0. It needs Flutter 3.44, as `record` 7.2 does.
+
 ## 4.0.4
 
 `quranlab_tajweedformer` 4.0.4 and `quranlab_tajweedformer_record` 4.0.4, over TajweedFormer for Android 4.0.2 and

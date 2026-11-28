@@ -1,10 +1,10 @@
 group = "ai.quranlab.tajweedformer.flutter"
-version = "4.0.4"
+version = "4.1.0"
 
 // The Android SDK this plugin wraps, from Maven Central, through its public API only. EXACTLY this version: the
 // plugin is built and tested against it. Change it only together with a build and the plugin's tests against the new
 // version.
-val tajweedformerVersion = "4.0.2"
+val tajweedformerVersion = "4.0.5"
 
 // A local Maven folder that holds ai.quranlab:tajweedformer before Maven Central does (a release candidate built with
 // the Core's production release, or CI's build with the Core's test release): QURANLAB_MAVEN=<folder> or
@@ -84,10 +84,22 @@ android {
     }
 }
 
-kotlin {
-    compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
-    }
+// Kotlin for the plugin's own sources (src/main/kotlin), in every app's setup:
+// - AGP 9 with built-in Kotlin (AGP 9's default): AGP compiles them; the `kotlin` extension is AGP's.
+// - AGP 9 with android.builtInKotlin=false (the Flutter 3.44 to 3.50 templates): Flutter's Gradle plugin applies the
+//   Kotlin plugin to plugins that do not apply it themselves.
+// - AGP 8 with the Kotlin plugin on the classpath (Flutter 3.41's template: AGP 8.11.1, Kotlin 2.2.20): nothing
+//   applies it, so the plugin does, here, when no `kotlin` extension exists yet.
+// It is not in the plugins block, and the JVM target is set on the compile tasks, not with a `kotlin {}` block: that
+// accessor only compiles when the extension exists, and an AGP 8 app failed on it with "Unresolved reference: kotlin"
+// (4.0.0 to 4.0.4). Flutter's Gradle plugin reads only a plugins block for the Kotlin plugin, so it neither warns
+// about this line nor applies the plugin twice.
+if (extensions.findByName("kotlin") == null) {
+    apply(plugin = "org.jetbrains.kotlin.android")
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
 }
 
 dependencies {

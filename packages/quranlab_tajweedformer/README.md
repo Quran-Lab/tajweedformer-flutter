@@ -1,8 +1,9 @@
 # TajweedFormer for Flutter
 
-TajweedFormer V4 for Flutter on Android and iOS: recitation audio in, the model's output out while the learner
-recites. On the device, offline after the first download, and free. One plugin over Quran Lab's native SDKs 4.0:
-Maven `ai.quranlab:tajweedformer` on Android and the Swift package `tajweedformer-apple` on iOS.
+TajweedFormer V4 for Flutter on Android, iOS, Windows, Linux and the web: recitation audio in, the model's output
+out while the learner recites. On the device, offline after the first download, and free. One plugin over Quran Lab's
+SDKs 4.0: Maven `ai.quranlab:tajweedformer` on Android, the Swift package `tajweedformer-apple` on iOS, the C SDK
+`tajweedformer-c` on Windows and Linux, and Quran Lab's hosted loader on the web.
 
 ## Install
 
@@ -14,10 +15,14 @@ flutter pub add quranlab_tajweedformer
 
 | | |
 | - | - |
-| **Key** | An apps key from [sdk.quranlab.ai](https://sdk.quranlab.ai) for your app's Android package name and iOS bundle id. |
-| **Flutter** | 3.44 or later. On iOS the app uses Flutter's Swift Package Manager integration (on by default): the Apple SDK is a Swift package only. |
+| **Key** | A key from [sdk.quranlab.ai](https://sdk.quranlab.ai): an apps key for your app's Android package name and iOS bundle id, a desktop key for Windows and Linux, a web key for your site's origins. |
+| **Flutter** | 3.41 or later (`quranlab_tajweedformer_record` needs 3.44, as the `record` package does). On iOS the app uses Flutter's Swift Package Manager integration (on by default since 3.44; on 3.41 `flutter config --enable-swift-package-manager`): the Apple SDK is a Swift package only. |
 | **Android** | Android 8.0 (API 26) or later: `minSdk = 26`. Phones and tablets are `arm64-v8a` and `armeabi-v7a`; `x86_64` runs the CPU engine on emulators, with a development key only. Add your signing certificates on the key's page for hardware-verified installs. |
 | **iOS** | iOS 15 or later on Apple silicon, Xcode 16. `NSMicrophoneUsageDescription` in `Info.plist`. The App Attest capability, for hardware-verified installs, the Neural Engine and shared recordings. A development key on the Simulator. |
+| **Windows** | Windows 10 or later, x64, Visual Studio's C++ tools. The plugin bundles the C SDK's DLLs beside your program. An app without a package identity passes `TajweedClientOptions(appId: ...)`, the id registered for its desktop key. No microphone in the C SDK: `listen()` is `runtime_unsupported` (use `quranlab_tajweedformer_record`). The model runs on the CPU engine. |
+| **Linux** | x86-64. The build machine needs git and the libcurl and OpenSSL 3 development files (the plugin builds the C SDK from its public source). The app id is the runner's GTK application id. No microphone and the CPU engine only, as on Windows. |
+| **Web** | A secure page (`https`, or `http://localhost` with a development key). If your site sends a Content-Security-Policy, add the web SDK's lines (the repository's README links them). The model runs in Quran Lab's frame on the page, on the CPU engine in WebAssembly. |
+| **Usage counts** | The portal counts a Flutter app under the SDK it runs on: Android, Apple, the C SDK on Windows and Linux, the web SDK on the web. |
 | **Download** | The first `client.model()` downloads the model, about 56 MB once, encrypted for the install. After that the model works offline, and the SDK keeps itself up to date in the background when the device is online. If Quran Lab's main servers can't be reached, the SDK uses backup servers automatically. |
 | **Takes** | A model runs one take at a time; a take holds at most 20 minutes of audio. |
 
@@ -43,7 +48,8 @@ Every failure is a `TajweedError` with the native SDK's `code`, `message`, `fix`
 yet, `lease` when the model is on the device and needs Quran Lab's answer to open).
 
 - **Your own audio:** `model.session()` and `session.pushInt16(...)` or `session.push(...)` replace `listen()`.
-  The optional package `quranlab_tajweedformer_record` captures the microphone with the `record` plugin.
+  The optional package `quranlab_tajweedformer_record` captures the microphone with the `record` plugin. On Windows
+  and Linux the C SDK has no microphone: `listen()` is `runtime_unsupported` there, and this is the way.
 - **No microphone:** `model.listenFrom(model.sampleClips.first)` runs a sample recitation through the same path.
 - **Recitation sharing:** the SDK shows Quran Lab's own consent sheet; every learner is asked, the choice is theirs,
   and there is nothing to switch on or off. `client.sharing.openSettings()` shows the learner's settings.
@@ -51,7 +57,7 @@ yet, `lease` when the model is on the device and needs Quran Lab's answer to ope
 - **A teacher notice** is up to you and encouraged, for example: "Automatic tajweed feedback can be wrong. It does
   not replace a qualified teacher."
 
-The full reference (every type, the events, sharing, the two platforms, building and testing) is in the
+The full reference (every type, the events, sharing, each platform and what differs on it, building and testing) is in the
 repository's [AGENTS.md](https://github.com/Quran-Lab/tajweedformer-flutter/blob/main/AGENTS.md), written for coding
 assistants and just as readable for you. Guides: [sdk.quranlab.ai/docs](https://sdk.quranlab.ai/docs).
 

@@ -87,6 +87,150 @@ jobs:
       - name: Android's verifier rule on the plugin's release AAR
         run: python3 tool/check_monitor_handlers.py packages/quranlab_tajweedformer/example/build/quranlab_tajweedformer/outputs/aar/quranlab_tajweedformer-release.aar
 
+  # A fresh app from a Flutter's own template, the plugin by path, built as a developer builds one. 4.0.0 to 4.0.4
+  # never built on Flutter 3.41's template (AGP 8.11.1 with the Kotlin plugin 2.2.20, Gradle 8.14): "Unresolved
+  # reference: kotlin" in the plugin's build file. flutter-3.41: the oldest Flutter the plugin allows, its template
+  # untouched. newest: Flutter 3.50's template on the newest stable AGP 9 and Gradle 9 with AGP's defaults (built-in
+  # Kotlin).
+  fresh:
+    name: A fresh app, ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: flutter-3.41
+            flutter: "3.41.6"
+            pin: ""
+          - app: newest
+            flutter: "3.50.0"
+            pin: --agp newest --gradle newest --defaults
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ matrix.flutter }}
+      - name: The fresh app (the plugin by path)
+        env:
+          PIN: ${{ matrix.pin }}
+        run: |
+          python3 tool/agp_matrix.py fresh --out "$RUNNER_TEMP/fresh_app"
+          if [ -n "$PIN" ]; then python3 tool/agp_matrix.py pin --dir "$RUNNER_TEMP/fresh_app/android" $PIN; fi
+          grep -h -E 'com.android.application|kotlin.android|distributionUrl' "$RUNNER_TEMP/fresh_app/android/settings.gradle.kts" "$RUNNER_TEMP/fresh_app/android/gradle/wrapper/gradle-wrapper.properties"
+      - name: Its debug APK
+        working-directory: ${{ runner.temp }}/fresh_app
+        run: flutter build apk --debug
+      - name: The plugin's classes are in it
+        run: python3 tool/agp_matrix.py classes --apk "$RUNNER_TEMP/fresh_app/build/app/outputs/flutter-apk/app-debug.apk"
+
+  # Windows (x64) on a GitHub-hosted runner: the plugin's Windows build (the C SDK's release fetched by its CMake,
+  # checked by SHA-256, and the plugin's own small library), the example in debug and release with the C SDK's DLLs
+  # beside the program, the Dart tests, and the bindings against the C SDK's own library. No key and no model.
+  windows:
+    name: Windows (the example, the C SDK's DLLs, the bindings)
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: "3.50.0"
+      - name: Dart tests
+        working-directory: packages/quranlab_tajweedformer
+        run: |
+          flutter pub get
+          flutter test
+      - name: The example, debug and release
+        working-directory: packages/quranlab_tajweedformer/example
+        run: |
+          flutter pub get
+          flutter build windows --debug
+          flutter build windows --release
+      - name: The C SDK, the Core and the plugin's library beside the program
+        shell: bash
+        working-directory: packages/quranlab_tajweedformer/example/build/windows/x64/runner
+        run: |
+          for mode in Debug Release; do
+            for f in quranlab_tajweedformer_example.exe tajweedformer.dll qlcore.dll libwinpthread-1.dll quranlab_tajweedformer_shim.dll; do
+              test -f "$mode/$f" || { echo "missing $mode/$f"; exit 1; }
+            done
+          done
+      - name: The bindings against the C SDK's own library (no key, no request)
+        shell: pwsh
+        working-directory: packages/quranlab_tajweedformer
+        run: |
+          $lib = "$env:GITHUB_WORKSPACE\packages\quranlab_tajweedformer\example\build\windows\x64\runner\Release"
+          $env:PATH = "$lib;$env:PATH"
+          $env:QURANLAB_C_SDK = $lib
+          flutter test test/ffi_native_test.dart
+      - name: The example starts and shows its first screen (no key)
+        shell: pwsh
+        working-directory: packages/quranlab_tajweedformer/example/build/windows/x64/runner/Release
+        run: |
+          $p = Start-Process .\quranlab_tajweedformer_example.exe -PassThru
+          Start-Sleep -Seconds 15
+          if ($p.HasExited) { throw "the example exited with $($p.ExitCode)" }
+          Stop-Process -Id $p.Id
+
+  # The web in the runner's Chrome (headless): the web host against a stand-in loader and the contract's error rows
+  # (no network, no key), the live hosted loader's API 4 (no key), and the example built for the web.
+  web:
+    name: The web (Chrome)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: "3.50.0"
+      - name: The web host against a stand-in loader, and the contract's error rows (no network, no key)
+        working-directory: packages/quranlab_tajweedformer
+        run: |
+          flutter pub get
+          flutter test --platform chrome test/web_host_test.dart
+      - name: The live hosted loader, API 4 (no key)
+        working-directory: packages/quranlab_tajweedformer
+        run: flutter test --platform chrome test/web_loader_live_test.dart
+      - name: The example for the web (release)
+        working-directory: packages/quranlab_tajweedformer/example
+        run: flutter build web --release
+
+  # Linux (x86-64): the example for Linux, where the plugin's CMake builds the C SDK from its release tag over the
+  # Core's published library, the bundle carries both, and the bindings run against them. No key and no model.
+  linux:
+    name: Linux (the example, the C SDK built from its tag, the bindings)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build tools (Flutter's Linux desktop needs, and the C SDK's libcurl and OpenSSL 3)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libcurl4-openssl-dev libssl-dev
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: "3.50.0"
+      - name: The example for Linux (release)
+        working-directory: packages/quranlab_tajweedformer/example
+        run: |
+          flutter pub get
+          flutter build linux --release
+          ls -l build/linux/x64/release/bundle/lib
+      - name: The bindings against the C SDK's own library (no key, no request)
+        working-directory: packages/quranlab_tajweedformer
+        run: |
+          lib="$GITHUB_WORKSPACE/packages/quranlab_tajweedformer/example/build/linux/x64/release/bundle/lib"
+          QURANLAB_C_SDK="$lib" LD_LIBRARY_PATH="$lib" flutter test test/ffi_native_test.dart
+
   ios:
     name: iOS (simulator and device builds)
     # macos-26: the Apple SDK 4.0 is checked with the Swift of this image (6.3)

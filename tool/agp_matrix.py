@@ -14,6 +14,8 @@ Usage, from the repository root:
   # a fresh app from the running Flutter's own template, the plugin by path (for a Flutter older than the example's)
   python3 tool/agp_matrix.py fresh --out /tmp/agp_app
   python3 tool/agp_matrix.py pin --dir /tmp/agp_app/android --agp 8.13.2 --gradle 8.14.3
+  # the plugin's Kotlin classes are in an app's APK (an APK built without them would still install)
+  python3 tool/agp_matrix.py classes --apk /tmp/agp_app/build/app/outputs/flutter-apk/app-debug.apk
 
 `pin` rewrites, in one app's android/ folder: the AGP and Kotlin plugin versions in settings.gradle.kts, the Gradle
 distribution in gradle/wrapper/gradle-wrapper.properties, and (with --defaults) drops the two template flags from
@@ -22,7 +24,7 @@ and from Gradle's version list (Gradle: the highest stable, not broken release o
 prints what it set, so a CI log names the versions it built with.
 
 `fresh` runs `flutter create` with the Flutter on PATH, so the app's settings are that Flutter's template (Flutter
-3.44.9: AGP 9.0.1, 3.47.9: AGP 9.1.0, 3.50.0: AGP 9.3.1), adds quranlab_tajweedformer from this checkout by path,
+3.41.6: AGP 8.11.1 with the Kotlin plugin, 3.44.9: AGP 9.0.1, 3.47.9: AGP 9.1.0, 3.50.0: AGP 9.3.1), adds quranlab_tajweedformer from this checkout by path,
 and sets minSdk 26 (the SDK's minimum). The in-repo example needs Dart 3.14 (Flutter 3.50), so an older Flutter
 builds a fresh app instead.
 
@@ -46,8 +48,10 @@ What was tried and kept or rejected:
   17 WireTest tests run.
 - Keeping the block and dropping only the buildscript's AGP classpath line also configured at AGP 9.1.1 (that is how
   the cause was confirmed), but it changes how the plugin resolves AGP for every app; not needed for the fix.
-- Flutter 3.41 cannot build the plugin on Android with or without the block (its Gradle plugin does not apply the
-  Kotlin plugin to plugins, so `kotlin {` in the build file is unresolved; 3.44 and later apply it). A separate issue.
+- Flutter 3.41 could not build the plugin on Android with or without the block (its Gradle plugin does not apply the
+  Kotlin plugin to plugins, so `kotlin {` in the build file was unresolved; 3.44 and later apply it). Fixed in 4.1.0
+  (report fb_f03370ed8557d5ff): the build file applies the Kotlin plugin itself when no `kotlin` extension exists and
+  sets the JVM target on the compile tasks. CI's `fresh` job builds Flutter 3.41.6's own template (AGP 8.11.1).
 - Flutter 3.50 cannot build any app on AGP 8, before any plugin is configured (its Gradle plugin calls
   ApplicationExtension.getDefaultConfig() with AGP 9's signature, which AGP 8.13.2 lacks), so AGP 8 is checked with
   Flutter 3.47 and a fresh app.
@@ -151,14 +155,26 @@ def fresh(args):
                     "agp_app", str(out)], check=True, stdout=subprocess.DEVNULL)
     pub = out / "pubspec.yaml"
     text = read(pub)
-    dep = f"  quranlab_tajweedformer:\n    path: {PLUGIN.as_posix()}\n"
-    text, n = re.subn(r"(?m)^dependencies:\n  flutter:\n    sdk: flutter\n", lambda m: m.group(0) + dep, text)
+    nl = "\r\n" if "\r\n" in text else "\n"  # flutter create on Windows writes CRLF
+    dep = f"  quranlab_tajweedformer:{nl}    path: {PLUGIN.as_posix()}{nl}"
+    text, n = re.subn(r"(?m)^dependencies:\r?\n  flutter:\r?\n    sdk: flutter\r?\n", lambda m: m.group(0) + dep, text)
     if n != 1:
         sys.exit("agp_matrix: the template's pubspec.yaml has no dependencies: flutter: block")
     write(pub, text)
     sub_once(out / "android/app/build.gradle.kts", r"minSdk = flutter\.minSdkVersion", "minSdk = 26", "minSdk line")
     subprocess.run([flutter, "pub", "get"], cwd=out, check=True, stdout=subprocess.DEVNULL)
     print(f"agp_matrix: fresh app at {out} (this Flutter's template), quranlab_tajweedformer from {PLUGIN}")
+
+
+def classes(args):
+    import zipfile
+    want = b"Lai/quranlab/tajweedformer/flutter/TajweedFormerPlugin;"
+    with zipfile.ZipFile(args.apk) as z:
+        dex = [n for n in z.namelist() if re.fullmatch(r"classes\d*\.dex", n)]
+        hits = [n for n in dex if want in z.read(n)]
+    print(f"agp_matrix: {args.apk}: {len(dex)} dex file(s), TajweedFormerPlugin in {', '.join(hits) or 'none'}")
+    if not hits:
+        sys.exit(1)
 
 
 def main():
@@ -176,6 +192,9 @@ def main():
     f = sp.add_parser("fresh", help="a fresh app from the running Flutter's template, the plugin by path")
     f.add_argument("--out", required=True)
     f.set_defaults(func=fresh)
+    c = sp.add_parser("classes", help="fail unless the plugin's classes are in an APK")
+    c.add_argument("--apk", required=True)
+    c.set_defaults(func=classes)
     args = ap.parse_args()
     args.func(args)
 

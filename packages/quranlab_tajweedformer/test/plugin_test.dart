@@ -10,6 +10,8 @@ import 'package:quranlab_tajweedformer/src/messages.g.dart';
 
 import 'fake_native.dart';
 
+import 'fixtures/errors_40_cases.g.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late FakeNative native;
@@ -434,7 +436,15 @@ void main() {
             'TajweedFormerPlugin.kt', 'Messages.g.swift', 'TajweedFormerPlugin.swift']));
     final found = <String>[];
     for (final f in files) {
-      final code = f.readAsLinesSync().map((l) => l.replaceFirst(RegExp(r'(^|\s)//.*$'), '')).join('\n');
+      // Flutter's own API is not a name of the plugin: a widget's `children:` argument and `visitChildren` (the sheet
+      // that Windows and Linux draw, lib/src/ffi)
+      final code = f
+          .readAsLinesSync()
+          .map((l) => l
+              .replaceFirst(RegExp(r'(^|\s)//.*$'), '')
+              .replaceAll(RegExp(r'\bchildren:'), '')
+              .replaceAll('visitChildren', ''))
+          .join('\n');
       for (final m in RegExp(r'[A-Za-z_$][A-Za-z0-9_$]*').allMatches(code)) {
         if (banned.hasMatch(m[0]!)) found.add('${f.path}: ${m[0]}');
       }
@@ -504,6 +514,21 @@ void main() {
     final vectors = jsonDecode(File('test/fixtures/errors_40.json').readAsStringSync()) as Map<String, Object?>;
     final cases = (vectors['codes'] as List).cast<Map<String, Object?>>();
     final causes = (vectors['causes'] as List).cast<Map<String, Object?>>();
+
+    test('the browser tests replay the same rows: test/fixtures/errors_40_cases.g.dart is this JSON', () {
+      // tool/gen_errors_40_cases.py writes it (a browser test cannot read a file); the web field names
+      const names = {'stage': 'stage', 'reason': 'reason', 'http_status': 'httpStatus', 'error_name': 'errorName',
+          'error_code': 'errorCode', 'needs': 'needs'};
+      expect(errors40Causes, hasLength(causes.length));
+      for (var i = 0; i < causes.length; i++) {
+        final want = causes[i]['cause'] as Map<String, Object?>?;
+        expect(errors40Causes[i].label, causes[i]['label']);
+        expect(errors40Causes[i].code, causes[i]['code']);
+        expect(errors40Causes[i].cause,
+            want == null ? isNull : {for (final e in names.entries) if (want[e.key] != null) e.value: want[e.key]});
+      }
+      expect(errors40CodesNotReported, vectors['codes_not_reported']);
+    });
 
     test('the code cases name catalogue codes only, and the unreported five are the API-misuse ones', () {
       expect(cases, hasLength(73));

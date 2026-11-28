@@ -56,16 +56,16 @@ class TajweedError implements Exception {
       if (error.code == 'channel-error') {
         return const TajweedError(TajweedErrorCode.runtimeUnsupported,
             'The TajweedFormer plugin has no native side on this platform.',
-            fix: 'Run the app on Android or iOS; rebuild it after adding the package (a hot restart does not load a '
-                'new plugin).');
+            fix: 'Run the app on Android, iOS, Windows, Linux or the web; rebuild it after adding the package (a '
+                'hot restart does not load a new plugin).');
       }
       return TajweedError(error.code, error.message ?? error.code, fix: fix, docs: docs, cause: cause);
     }
     if (error is MissingPluginException) {
       return const TajweedError(TajweedErrorCode.runtimeUnsupported,
           'The TajweedFormer plugin has no native side on this platform.',
-          fix: 'Run the app on Android or iOS; rebuild it after adding the package (a hot restart does not load a new '
-              'plugin).');
+          fix: 'Run the app on Android, iOS, Windows, Linux or the web; rebuild it after adding the package (a '
+              'hot restart does not load a new plugin).');
     }
     return TajweedError(TajweedErrorCode.engineFailed, error.toString());
   }

@@ -16,7 +16,7 @@ let appleSDK: Package.Dependency = {
     if let folder = ProcessInfo.processInfo.environment["QURANLAB_APPLE_SDK"], !folder.isEmpty {
         return .package(path: folder)
     }
-    return .package(url: "https://github.com/Quran-Lab/tajweedformer-apple", exact: "4.0.3")
+    return .package(url: "https://github.com/Quran-Lab/tajweedformer-apple", exact: "4.0.5")
 }()
 
 let package = Package(

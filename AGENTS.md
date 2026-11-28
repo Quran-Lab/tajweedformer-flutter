@@ -18,7 +18,7 @@ Everything an assistant needs to integrate this SDK correctly: use only the name
 </td>
 <td width="33%" valign="top">
 
-**One plugin, two platforms**<br>A Dart API over the native Android and iOS SDKs, with their names. It runs on the CPU on every device, and on the Neural Engine or the NPU where the device's build passes its self-test.
+**One plugin, five platforms**<br>One Dart API over Quran Lab's Android, iOS, Windows and Linux, and web SDKs, with their names. It runs on the CPU everywhere, and on phones on the Neural Engine or the NPU where the device's build passes its self-test.
 
 </td>
 </tr>
@@ -54,10 +54,11 @@ Copy the setup prompt from [sdk.quranlab.ai](https://sdk.quranlab.ai) and paste 
 
 ## At a glance
 
-- **What it is:** one Flutter plugin, `quranlab_tajweedformer`, for Android and iOS. It is a thin layer over Quran
-  Lab's native SDKs 4.0 and carries no copy of either: on Android it depends on Maven `ai.quranlab:tajweedformer`
-  4.0.2, on iOS on the Swift package `Quran-Lab/tajweedformer-apple` 4.0.3 (exactly these versions, the ones it is
-  built and tested with), and it uses only their public API. The Dart API has the native
+- **What it is:** one Flutter plugin, `quranlab_tajweedformer`, for Android, iOS, Windows, Linux and the web. It is a
+  thin layer over Quran Lab's SDKs 4.0 and carries no copy of any: on Android it depends on Maven
+  `ai.quranlab:tajweedformer` 4.0.5, on iOS on the Swift package `Quran-Lab/tajweedformer-apple` 4.0.5, on Windows and
+  Linux on the C SDK `Quran-Lab/tajweedformer-c` 4.0.3 (exactly these versions, the ones it is built and tested with),
+  and on the web on Quran Lab's hosted loader; it uses only their public API. The Dart API has the native
   SDKs' names and shapes: a `TajweedClient` (the app's key, one per process), a `TajweedModel` (a verified model
   on the device), a `TajweedSession` (one take), the `TajweedHeads` (the model's output) and the `TajweedBackend`
   (the CPU engine or the device's accelerator). Every failure is one Dart type, `TajweedError`, with the native
@@ -72,9 +73,10 @@ Copy the setup prompt from [sdk.quranlab.ai](https://sdk.quranlab.ai) and paste 
   closed library in each native SDK, under a lease Quran Lab signs for the install. The first run needs a
   connection; after that the model works offline, and the SDK keeps itself up to date in the background when the
   device is online. No call gives a model file or its path. See "The lease".
-- **Recitation sharing:** the native SDK shows Quran Lab's own consent sheet itself, over the Flutter activity on
-  Android and the Flutter view controller on iOS. Every learner is asked, and the choice is theirs; there is nothing
-  to switch on or off in code.
+- **Recitation sharing:** Quran Lab's own consent sheet: on Android and iOS the native SDK shows it over the
+  Flutter activity or view controller, on the web the web SDK shows it on the page, and on Windows and Linux the
+  plugin draws it from the C SDK's copy deck. Every learner is asked, and the choice is theirs; there is nothing to
+  switch on or off in code.
 - **Analytics and error reports** are always on: anonymous daily counts and durations, and a small report of each
   failure (where and why, never a message or an identifier). No option turns them off; only Quran Lab can, from its
   signed config.
@@ -85,20 +87,25 @@ Copy the setup prompt from [sdk.quranlab.ai](https://sdk.quranlab.ai) and paste 
 flutter pub add quranlab_tajweedformer
 ```
 
-Flutter 3.44 or later. On iOS the app uses Flutter's Swift Package Manager integration (on by default): the Apple SDK
-ships only as a Swift package.
+Flutter 3.41 or later (`quranlab_tajweedformer_record` needs 3.44, as the `record` package does). On iOS the app uses
+Flutter's Swift Package Manager integration (on by default since Flutter 3.44; on 3.41 `flutter config
+--enable-swift-package-manager`): the Apple SDK ships only as a Swift package.
 
 ## Before you start
 
 | | |
 | - | - |
-| **Key** | An apps key from [sdk.quranlab.ai](https://sdk.quranlab.ai) for your app's Android package name and iOS bundle id. On the Android emulator and the iOS Simulator, a development key: Quran Lab leases the Core's emulator and Simulator builds to development keys only. |
-| **Android** | Android 8.0 (API 26) or later: `minSdk = 26`. Phones and tablets are `arm64-v8a` and `armeabi-v7a`; `x86_64` runs the CPU engine only, on the emulator and x86 Chromebooks. The plugin brings `ai.quranlab:tajweedformer:4.0.2`; do not add it yourself. On your key's page, under "Signing certificates (SHA-256)", add the app signing key certificate and the upload key certificate: until you do, your installs are not hardware-verified for your app. At 4.0's launch every phone runs the Core's CPU engine. |
+| **Key** | A key from [sdk.quranlab.ai](https://sdk.quranlab.ai): an apps key for your app's Android package name and iOS bundle id, a desktop key for Windows and Linux, a web key for your site's origins. On the Android emulator and the iOS Simulator, a development key: Quran Lab leases the Core's emulator and Simulator builds to development keys only. |
+| **Android** | Android 8.0 (API 26) or later: `minSdk = 26`. Phones and tablets are `arm64-v8a` and `armeabi-v7a`; `x86_64` runs the CPU engine only, on the emulator and x86 Chromebooks. The plugin brings `ai.quranlab:tajweedformer:4.0.5`; do not add it yourself. On your key's page, under "Signing certificates (SHA-256)", add the app signing key certificate and the upload key certificate: until you do, your installs are not hardware-verified for your app. At 4.0's launch every phone runs the Core's CPU engine. |
 | **iOS** | iOS 15 or later on Apple silicon (devices and the arm64 simulator), Xcode 16 or later, and Flutter's Swift Package Manager integration (the Apple SDK ships only as a Swift package). `NSMicrophoneUsageDescription` in `Info.plist`. The App Attest capability: with it an install is hardware-verified, may use the Neural Engine, and uploads shared recordings. Exclude x86_64 from Simulator builds (`EXCLUDED_ARCHS[sdk=iphonesimulator*] = x86_64`): the Core is arm64 only. |
+| **Windows** | Windows 10 or later, x64, with Visual Studio's C++ tools. The plugin bundles the C SDK's release (`tajweedformer.dll`, the Core `qlcore.dll`, `libwinpthread-1.dll`, checked by SHA-256) beside your program. An app without a package identity passes `TajweedClientOptions(appId: ...)`, the id registered for its desktop key. The C SDK has no microphone: `model.listen()` is `runtime_unsupported`; capture with `quranlab_tajweedformer_record` or push your own audio. The model runs on the Core's CPU engine. |
+| **Linux** | x86-64. The plugin builds the C SDK from its public source at its release tag, over the Core's published `qlcore.so`: the build machine needs git and the libcurl and OpenSSL 3 development files. The app id is the runner's GTK application id. No microphone and the CPU engine only, as on Windows. |
+| **Web** | A secure page (`https`, or `http://localhost` with a development key). The model runs in Quran Lab's frame on your page, on the web SDK's CPU engine in WebAssembly; if your site sends a Content-Security-Policy, add the web SDK's lines ([TajweedFormer for the web](https://github.com/Quran-Lab/tajweedformer-web#the-content-security-policy-lines-your-site-needs)). |
 | **Download** | Making the client downloads nothing. The first `client.model()` or `client.prefetch()` downloads the model, encrypted: 56.5 MB, once (73.8 MB on disk), and needs a connection. |
 | **Offline** | The first `client.model()` or `client.prefetch()` needs a connection; after that the model works offline, and the SDK keeps itself up to date in the background when the device is online. `needs_connection` means the SDK needs Quran Lab to continue. A model that is open keeps running. |
-| **Model** | The model runs only inside the Quran Lab Core, which comes with the native SDKs: its files are encrypted from Quran Lab's server to the device, and no plain model file is ever written. When Quran Lab refuses the key or the app, the model's files are removed. |
+| **Model** | The model runs only inside the Quran Lab Core, which comes with the native SDKs (on the web, inside the web SDK's frame): its files are encrypted from Quran Lab's server to the device, and no plain model file is ever written. When Quran Lab refuses the key or the app, the model's files are removed. |
 | **Analytics** | Anonymous counts and durations (never audio, text, names or device identifiers) and reports of the failures your learners hit are always sent; you find them at sdk.quranlab.ai under your app, Problems included. |
+| **Usage counts** | The portal counts a Flutter app under the SDK it runs on: the Android SDK, the Apple SDK, the C SDK on Windows and Linux, the web SDK on the web. |
 | **Takes** | A model runs one take at a time; a take holds at most 20 minutes of audio. |
 
 ## Quick start
@@ -262,11 +269,11 @@ nothing to switch on in code, and nothing to switch off. `flags.contributions` i
 own switch, for every app (a platform not offered yet, or an incident), never the app's: while it is off,
 `isAvailable()` is false and nothing is asked.
 
-- **The sheet** is the native SDK's own, in the learner's language, with Quran Lab's design, shown by the native
-  SDK itself over the Flutter activity (Android) or view controller (iOS), only while the app is in front and no take
-  is open. The first ask comes never in the install's first 24 hours nor before its third finished take; after "Not
-  now" a small card asks again after 14 days and 7 takes, then 30 days and 10; three asks at most, ever, and a yes is
-  never asked again.
+- **The sheet** is in the learner's language, with Quran Lab's design, shown only while the app is in front and no
+  take is open: by the native SDK itself over the Flutter activity (Android) or view controller (iOS), by the web SDK
+  on the page, and on Windows and Linux by the plugin in your app's `Overlay` (see "Each platform"). The first ask
+  comes never in the install's first 24 hours nor before its third finished take; after "Not now" a small card asks
+  again after 14 days and 7 takes, then 30 days and 10; three asks at most, ever, and a yes is never asked again.
 - **The settings:** `client.sharing.openSettings()` shows the SDK's settings screen over the app: the switch, "What
   is shared", "Delete what I shared" and the learner's recovery code. Put it behind a row of your settings screen.
 - In code: `client.sharing.isAvailable()`, `isOn()`, `setOn(on)` (the learner's own switch, for an app that draws
@@ -276,7 +283,20 @@ own switch, for every app (a platform not offered yet, or an incident), never th
 - **Takes in a row** make one shared recording when they come within Quran Lab's join window (3 seconds unless its
   config sets up to 60).
 
-## The two platforms
+## Each platform
+
+| | Android | iOS | Windows | Linux | Web |
+|-|-|-|-|-|-|
+| SDK underneath | Android SDK 4.0.5 | Apple SDK 4.0.5 | C SDK 4.0.3 | C SDK 4.0.3, built from source | web SDK 4, hosted loader |
+| Key | apps key | apps key | desktop key | desktop key | web key |
+| `model.listen()` (microphone) | yes | yes | no: `runtime_unsupported` | no: `runtime_unsupported` | yes |
+| Engine | CPU; the NPU with LiteRT (optional) | CPU; the Neural Engine on attested installs | CPU | CPU | CPU (WebAssembly) |
+| Hardware-verified installs | Key Attestation or Play Integrity | App Attest | no | no | no |
+| Sharing sheet drawn by | the Android SDK | the Apple SDK | this plugin | this plugin | the web SDK |
+
+The Neural Engine and the NPU are on phones only: on Windows, Linux and the web the model always runs on the Core's
+CPU engine, and `backend` says `cpu`. Every platform needs Flutter 3.41 or later; `quranlab_tajweedformer_record` needs
+3.44, as the `record` package does.
 
 **Android.** The plugin depends on `ai.quranlab:tajweedformer` at exactly the version it was built and tested
 with, through its public API only; do not add the SDK to your app yourself. Android 8.0 (API 26) or later: set
@@ -301,20 +321,72 @@ arm64 only (devices and the Apple silicon Simulator): add `EXCLUDED_ARCHS[sdk=ip
 `ios/Flutter/Debug.xcconfig` and `Release.xcconfig`, as the example does, since `flutter build ios --simulator` also
 builds x86_64.
 
+**Windows.** Windows 10 or later, x64, with Visual Studio's C++ tools (as for any Flutter Windows app). The plugin
+calls TajweedFormer for Windows and Linux (the C SDK, `Quran-Lab/tajweedformer-c` 4.0.3) through `dart:ffi` and
+bundles its release beside your program: `tajweedformer.dll`, the Core `qlcore.dll` and `libwinpthread-1.dll`, checked
+by SHA-256 at build time. Use a desktop key. An app with a package identity (MSIX) is known by its package family
+name; an app without one passes the id registered for the key: `TajweedClientOptions(appId: '...')`, else
+`invalid_argument`.
+
+**Linux.** x86-64. The C SDK has no Linux archive yet, so the plugin builds `libtajweedformer.so` from the C SDK's
+public source at its release tag, over the Core's published `qlcore.so`, checked by SHA-256: the build machine needs
+git and the libcurl and OpenSSL 3 development files (Debian and Ubuntu: `libcurl4-openssl-dev libssl-dev`), and a
+connection for the first build. Use a desktop key; the app id is the runner's GTK application id.
+
+On both, everything the API offers works as on a phone, with these differences, each a catalogue error or a
+documented value, never a silent one:
+
+- **No microphone in the C SDK:** `model.listen()` is `runtime_unsupported`. Capture with
+  `quranlab_tajweedformer_record`, or push your own audio into `model.session()`. `diagnose().microphone` is `none`.
+- **No hardware attestation or accelerator:** desktop installs lease under the platform's own trust, and the model
+  runs on the Core's CPU engine.
+- **The sharing sheet** is drawn by the plugin in your app's `Overlay` (an app with a `Navigator`), from the C SDK's
+  copy deck and in the design every SDK shares: the sheet, the re-ask card at the bottom of the window, and the
+  settings of `openSettings()`. The C SDK decides when an ask is due, under the same rules as on a phone, and a
+  learner who said yes is never asked again. Minimizing the window takes an ask on screen away without an answer.
+- `listenFrom(clip)` plays the clip to its end at the clip's pace: `cancel()` and the model's other calls wait until
+  it has ended. `sharing.items()` has no duration or size.
+- Calls that wait for the network or for a download (the model, `prefetch()`, `storage()`, `diagnose()`, sharing's
+  `items()`, `summary()`, `setOn()` and `delete()`, and the window leaving and regaining the foreground) run on the
+  plugin's own isolates, never on the UI's.
+
+**The web.** The plugin loads Quran Lab's hosted loader, the same one the npm package `@quran-lab/tajweedformer`
+loads, through `dart:js_interop`. The engine, the model, its lease and its storage live in Quran Lab's frame on your
+page, exactly as with the web SDK; the microphone and the sharing sheet are the web SDK's own. Use a web key that
+lists your site's origins (a development web key also allows `http://localhost`). The page must be a secure context
+(`https`, or `http://localhost`). If your site sends a Content-Security-Policy, add the lines in "The
+Content-Security-Policy lines your site needs" of [TajweedFormer for the web](https://github.com/Quran-Lab/tajweedformer-web#the-content-security-policy-lines-your-site-needs).
+`TajweedClientOptions.storage` is the web SDK's storage name (1 to 40 letters, digits, `.`, `_` or `-`). What differs
+from a phone:
+
+- A take from `model.listen()` ends with `hidden` when the page is hidden.
+- `client.sharing.ask()` resolves once the learner has answered the sheet or the card (on the other platforms, once
+  it is on screen); it is false at once when no ask is due.
+- The model runs on the web SDK's CPU engine in WebAssembly: no accelerator, no hardware-verified install.
+- The loader comes from Quran Lab at run time, so a fix of the web SDK reaches your site without a plugin release.
+  If it cannot be loaded, `TajweedClient.create` fails with `needs_connection`.
+
+**Usage counts.** The portal counts a Flutter app's installs and use under the SDK it runs on: the Android SDK, the
+Apple SDK, the C SDK on Windows and Linux, the web SDK on the web. Its update notice names that SDK too.
+
 ## How it works
 
 ```mermaid
 flowchart LR
   dart["Dart API<br/>quranlab_tajweedformer"] -- Pigeon host API --> kotlin["Android plugin<br/>Kotlin"]
   dart -- Pigeon host API --> swift["iOS plugin<br/>Swift"]
+  dart -- dart:ffi --> ffi["tajweedformer.dll / .so<br/>(the C SDK)"]
+  dart -- dart:js_interop --> loader["the hosted loader<br/>(the web SDK)"]
   kotlin --> android["ai.quranlab:tajweedformer<br/>(Maven Central)"]
   swift --> apple["tajweedformer-apple<br/>(Swift package)"]
   kotlin -- one event channel --> dart
   swift -- one event channel --> dart
 ```
 
-The calls go through a Pigeon host API (`pigeon/messages.dart`, generated into Dart, Kotlin and Swift), and the
-chunks, events and download progress of every take come back through one event channel. Head values and pushed
+On Android and iOS the calls go through a Pigeon host API (`pigeon/messages.dart`, generated into Dart, Kotlin and
+Swift), and the chunks, events and download progress of every take come back through one event channel. On Windows
+and Linux the same interface (`lib/src/host.dart`) calls the C SDK through `dart:ffi` (bindings generated by ffigen
+from its header); on the web it calls the hosted loader through `dart:js_interop`. Head values and pushed
 samples travel as little-endian float32 or int16 bytes. The decoded layer travels as a delta: each chunk carries
 only the tokens and frames that changed since the one before, so a long take does not send its history every 320
 ms; the Dart side rebuilds the whole layer, and a decoded layer the app already holds never changes.
@@ -327,6 +399,7 @@ cd packages/quranlab_tajweedformer
 flutter pub get
 flutter analyze
 flutter test                                   # the Dart API against mocked platform channels
+flutter test --platform chrome test/web_host_test.dart   # the web host against a stand-in loader
 cd example
 flutter build apk --debug                      # the example app on Android
 cd android && ./gradlew :quranlab_tajweedformer:testDebugUnitTest   # the Kotlin unit tests
@@ -342,15 +415,22 @@ lease, the download, the 35 conformance clips against the Core gate's file, an e
 which files it reads from the app's own folder. CI runs everything else on Quran Lab's Linux runner.
 
 `dart run pigeon --input pigeon/messages.dart` regenerates the three channel files after a change of the interface.
-The iOS side builds on a Mac: `flutter build ios --simulator` in `example/`.
+The iOS side builds on a Mac: `flutter build ios --simulator` in `example/`. The desktop and web builds:
+`flutter build windows`, `flutter build linux` and `flutter build web` in `example/`. With `QURANLAB_C_SDK` set to the
+folder of a built example's DLLs (Windows: also on `PATH`), `flutter test test/ffi_native_test.dart` checks the
+bindings against the C SDK's own library.
 
 ## Status
 
-4.0.4 on pub.dev (`quranlab_tajweedformer` and `quranlab_tajweedformer_record`), over the Android SDK 4.0.2 and the
-Apple SDK 4.0.3. The plugin builds and passes its tests against both, and on Android in apps on the Android Gradle
-Plugin from 8.13 to 9.5. The 4.0 end-to-end test passed with 4.0.0 on
-the Android emulator, the iOS Simulator and an iPhone (App Attest, the hardware-verified install, the Neural Engine),
-and with 4.0.2 on the iOS Simulator.
+4.1.0 on pub.dev (`quranlab_tajweedformer` and `quranlab_tajweedformer_record`), over the Android SDK 4.0.5, the
+Apple SDK 4.0.5 and, on Windows and Linux, the C SDK 4.0.3. Every change is built and tested on Android in apps on the
+Android Gradle Plugin from the lowest Flutter 3.50 accepts to the newest 9.x, in a fresh app made by Flutter 3.41.6's
+template and in one on the newest Flutter, and on the web in Chromium (against a stand-in loader and the live hosted
+loader's API); the iOS build against the Apple SDK 4.0.5 runs in the public repository's CI. On Windows the end-to-end test
+passes against Quran Lab's servers with the C SDK 4.0.3 (the 35 conformance clips identical to the Core gate's).
+
+The 4.0 end-to-end test passed with 4.0.0 on the Android emulator, the iOS Simulator and an iPhone (App Attest, the
+hardware-verified install, the Neural Engine), and with 4.0.2 on the iOS Simulator.
 
 Quran Lab encourages, but does not require, one line where your app shows feedback built on the model, for
 example: "Automatic tajweed feedback can be wrong. It does not replace a qualified teacher." Any honest wording

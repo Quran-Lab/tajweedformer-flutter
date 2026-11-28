@@ -69,12 +69,16 @@ class TajweedModel {
 
   /// A take fed by the SDK's own microphone: it asks for the permission (a refusal is `microphone_denied`),
   /// captures at the device's rate and carries that rate to the session. The take ends when the app leaves the
-  /// foreground (`TajweedEnded(background)`). Needs `NSMicrophoneUsageDescription` on iOS.
+  /// foreground (`TajweedEnded(background)`; on the web when the page is hidden, `hidden`). Needs
+  /// `NSMicrophoneUsageDescription` on iOS.
+  /// On Windows and Linux the C SDK has no microphone: `runtime_unsupported` (capture with
+  /// `quranlab_tajweedformer_record`, or push your own audio into [session]).
   Future<TajweedSession> listen({TajweedSessionOptions options = const TajweedSessionOptions()}) =>
       _open('listen', options, pushes: false);
 
   /// The same path with no microphone: a session fed by one of [sampleClips]. It ends with
-  /// `TajweedEnded(sourceEnd)`.
+  /// `TajweedEnded(sourceEnd)`. On Windows and Linux the C SDK runs the clip to its end at the clip's pace:
+  /// `cancel()` and the model's other calls wait until the clip has ended.
   Future<TajweedSession> listenFrom(TajweedClip clip, {TajweedSessionOptions options = const TajweedSessionOptions()}) =>
       _open('clip', options, pushes: false, clipName: clip.name);
 

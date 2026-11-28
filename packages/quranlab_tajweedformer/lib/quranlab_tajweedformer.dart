@@ -1,4 +1,5 @@
-/// TajweedFormer V4 for Flutter: Quran Lab's Android and iOS SDKs 4.0 in one Dart API.
+/// TajweedFormer V4 for Flutter: Quran Lab's SDKs 4.0 in one Dart API, on Android and iOS (the native SDKs),
+/// Windows and Linux (the C SDK) and the web (Quran Lab's hosted loader).
 ///
 /// The same five things as every Quran Lab SDK: the client, the model, the session (one take), its heads and the
 /// backend. Four calls, the same as every Quran Lab SDK: a client, the model, a take, its chunks.

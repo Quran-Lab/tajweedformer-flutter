@@ -1,12 +1,14 @@
-// SDK 4.0 end to end through the plugin, on an Android device or emulator, the iOS Simulator or an iPhone against
-// Quran Lab's servers (not run by CI: the CI machine has no device and never holds a model). Nothing secret is in the
-// app: the inputs go into the app's own folder first (Android: adb push, then `run-as <app id> cp` into files/; the
-// iOS Simulator: Documents/ of the container `xcrun simctl get_app_container <device> <bundle id> data` gives; an
-// iPhone: `xcrun devicectl device copy to --domain-type appDataContainer` into Documents/), and the key is never
-// printed. Below, files/ stands for that folder.
+// SDK 4.0 end to end through the plugin, on an Android device or emulator, the iOS Simulator, an iPhone, a Mac,
+// Windows or Linux against Quran Lab's servers (not run by CI: the CI machine has no device and never holds a model).
+// Nothing secret is in the app: the inputs go into the app's own folder first (Android: adb push, then `run-as <app id>
+// cp` into files/; the iOS Simulator: Documents/ of the container `xcrun simctl get_app_container <device> <bundle id>
+// data` gives; an iPhone: `xcrun devicectl device copy to --domain-type appDataContainer` into Documents/; a Mac: the
+// app container's Documents/; Windows and Linux: the folder named by QURANLAB_E2E_DIR), and the key is never printed.
+// Below, files/ stands for that folder.
 //
 //   files/e2e/key                the key (on the emulator or the Simulator, a development key: those Core builds are
-//                                leased to development keys only)
+//                                leased to development keys only; on Windows, Linux and the Mac a desktop key)
+//   files/e2e/app_id             optional: the app id the key is registered for (desktop keys), passed as appId
 //   files/e2e/expected.jsonl     the Core gate's file: per clip its greedy tokens and the FNV-1a of every head of
 //                                every chunk
 //   files/e2e/clips/<clip>.pcm   its clips, 16 kHz mono float32 little endian
@@ -22,21 +24,25 @@
 //
 // Run: build it as the app (`flutter build apk --debug -t integration_test/e2e_test.dart` with QURANLAB_APPLICATION_ID
 // set to the key's app id; iOS: `flutter build ios --simulator --debug -t ...`, or a signed profile build for an
-// iPhone, with the key's bundle id), install it, put the inputs in place, start it and read its log (`flutter test` on
-// a device uninstalls the app at the end). Each step prints one line `E2E <json>` and appends it to
-// files/e2e/result.jsonl.
+// iPhone, with the key's bundle id; a desktop: `flutter test integration_test/e2e_test.dart -d windows|linux`),
+// put the inputs in place, start it and read its log (`flutter test` on a phone uninstalls the app at the end). Each
+// step prints one line `E2E <json>` and appends it to files/e2e/result.jsonl. The clips' check itself is
+// lib/e2e/conformance.dart, the same code the web's run (lib/e2e_web.dart) and the Windows run without a device
+// (test/ffi_e2e_test.dart) use.
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:quranlab_tajweedformer/quranlab_tajweedformer.dart';
+import 'package:quranlab_tajweedformer_example/e2e/conformance.dart';
 
 /// The app's own files folder without a plugin: on Android from the process name (the app id), on iOS the app
 /// container's Documents (the container is the parent of the app's tmp).
 Directory filesDir() {
+  final dir = Platform.environment['QURANLAB_E2E_DIR'];
+  if (dir != null && dir.isNotEmpty) return Directory(dir).parent;
   if (Platform.isIOS) return Directory('${Directory.systemTemp.parent.path}/Documents');
   final name = File('/proc/self/cmdline').readAsStringSync().split('\u0000').first.split(':').first;
   return Directory('/data/user/0/$name/files');
@@ -54,28 +60,9 @@ void report(String step, Map<String, Object?> data) {
 /// The native SDK's own folder (its models live in `models/` there).
 Directory sdkDir() => Platform.isIOS
     ? Directory('${Directory.systemTemp.parent.path}/Library/Application Support/QuranLab')
-    : Directory('${filesDir().parent.path}/no_backup/quranlab');
-
-/// FNV-1a 64 over bytes. The Core's conformance tools (qlc_bench.c, zf_test.h) start it at 1469598103934665603, the
-/// standard basis with its last digit dropped, and the gate file's per-chunk values and `logp_fnv` were made with it;
-/// the one digest over the 35 clips below uses the standard basis, as stage B's device test did.
-const _gateBasis = 1469598103934665603;
-const _fnvOffset = 0xcbf29ce484222325;
-const _fnvPrime = 0x100000001b3;
-
-int fnv(int h, Uint8List bytes) {
-  var x = h;
-  for (final b in bytes) {
-    x = (x ^ b) * _fnvPrime;
-  }
-  return x;
-}
-
-/// The 64 bits as 16 hex digits (a Dart int is signed: the high and low halves are written apart).
-String hex(int x) =>
-    (x >>> 32).toRadixString(16).padLeft(8, '0') + (x & 0xffffffff).toRadixString(16).padLeft(8, '0');
-
-Uint8List bytesOf(Float32List v) => v.buffer.asUint8List(v.offsetInBytes, v.lengthInBytes);
+    : Platform.isWindows || Platform.isLinux
+        ? Directory('${filesDir().path}/e2e/storage')
+        : Directory('${filesDir().parent.path}/no_backup/quranlab');
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -92,10 +79,16 @@ void main() {
       return;
     }
     final key = keyFile.readAsStringSync().trim();
+    final appIdFile = File('${dir.path}/app_id');
+    final desktop = Platform.isWindows || Platform.isLinux;
 
     // ---- register, the lease, the download, the open ----
     final t0 = DateTime.now();
-    final client = await TajweedClient.create(key);
+    final client = await TajweedClient.create(key,
+        options: TajweedClientOptions(
+          appId: appIdFile.existsSync() ? appIdFile.readAsStringSync().trim() : null,
+          storage: desktop ? sdkDir().path : null,
+        ));
     var done = 0;
     var total = 0;
     final model = await client.model(onProgress: (d, t) {
@@ -104,111 +97,22 @@ void main() {
     });
     final openMs = DateTime.now().difference(t0).inMilliseconds;
     final d = await client.diagnose();
-    final storage = await client.storage();
-    report('open', {
-      'ms': openMs,
-      'download_done': done,
-      'download_total': total,
-      'model': model.version,
-      'build': model.build,
-      'contexts': model.contexts,
-      'backend': '${await model.backend()}',
-      'sdk': d.sdkVersion,
-      'key_accepted': d.keyAccepted,
-      'key_reason': d.keyReason,
-      'config': d.config,
-      'model_verified': d.modelVerified,
-      'connection': d.connection,
-      'protected': {
-        'keyStore': d.protectedModel?.keyStore,
-        'lease': d.protectedModel?.lease,
-        'leaseClass': d.protectedModel?.leaseClass,
-        'leaseExpires': d.protectedModel?.leaseExpires,
-        'refreshAfter': d.protectedModel?.refreshAfter,
-        'graceUntil': d.protectedModel?.graceUntil,
-        'core': d.protectedModel?.core,
-      },
-      'stored': [for (final m in storage.models) '${m.version} ${m.build} ${m.bytes}'],
-    });
+    report('open', await openReport(client, model, openMs, done, total));
     expect(d.keyAccepted, isTrue);
     expect(d.modelVerified, isTrue);
     expect(d.protectedModel?.lease, 'valid');
 
     // ---- the 35 clips on the CPU engine, every head of every chunk against the gate's FNV-1a ----
-    final heads12 = [...TajweedSessionOptions.allHeads]..sort();
-    final expected = [
-      for (final line in File('${dir.path}/expected.jsonl').readAsLinesSync())
-        if (line.trim().isNotEmpty) jsonDecode(line) as Map<String, Object?>,
-    ];
-    var identical = 0;
-    var tokensSame = 0;
-    var chunksAll = 0;
-    var digest = _fnvOffset;
-    var gateDigest = _fnvOffset;
-    final bad = <String>[];
-    final clipsStart = DateTime.now();
-    for (final e in expected) {
-      final clip = e['clip'] as String;
+    final expected = expectedOf(File('${dir.path}/expected.jsonl').readAsStringSync());
+    final r = await conformance(model, expected, (clip) async {
       final raw = File('${dir.path}/clips/$clip.pcm').readAsBytesSync();
-      final samples = raw.buffer.asFloat32List(raw.offsetInBytes, raw.lengthInBytes ~/ 4);
-      final session = await model.listenFromSamples(samples, 16000,
-          options: const TajweedSessionOptions(
-              context: 'c16_l64',
-              heads: TajweedSessionOptions.allHeads,
-              backend: TajweedSessionBackend.cpu,
-              pace: TajweedPace.fast));
-      final chunks = await session.chunks.toList();
-      final heads = await session.finish();
-      chunksAll += chunks.length;
-      final want = [for (final t in e['tokens'] as List) (t as num).toInt()];
-      final got = [for (final t in heads.greedy()) t.id];
-      if (got.length == want.length && Iterable<int>.generate(got.length).every((i) => got[i] == want[i])) tokensSame++;
-      final out = (e['out_fnv'] as Map).cast<String, List<Object?>>();
-      final fnvs = <String, List<String>>{};
-      var logp = _gateBasis;
-      for (final c in chunks) {
-        for (final h in heads12) {
-          final v = c.heads[h]?.values;
-          (fnvs[h] ??= []).add(v == null ? '0000000000000000' : hex(fnv(_gateBasis, bytesOf(v))));
-          if (h == 'log_probs' && v != null) logp = fnv(logp, bytesOf(v));
-        }
-      }
-      // one digest over every output of every chunk, in the gate file's order, the same way for the gate's own values
-      for (final h in heads12) {
-        for (final x in fnvs[h] ?? const <String>[]) {
-          digest = fnv(digest, Uint8List.fromList(utf8.encode(x)));
-        }
-        for (final x in out[h] ?? const []) {
-          gateDigest = fnv(gateDigest, Uint8List.fromList(utf8.encode(x as String)));
-        }
-      }
-      final sameHeads = heads12.every((h) {
-        final a = fnvs[h] ?? const <String>[];
-        final b = out[h] ?? const [];
-        return a.length == b.length && Iterable<int>.generate(a.length).every((i) => a[i] == b[i]);
-      });
-      final same = chunks.length == (e['chunks'] as num).toInt() && hex(logp) == e['logp_fnv'] && sameHeads;
-      if (same) {
-        identical++;
-      } else {
-        bad.add('$clip chunks ${chunks.length}/${e['chunks']} logp ${hex(logp) == e['logp_fnv']} '
-            'heads ${heads12.where((h) => '${fnvs[h]}' != '${out[h]}').toList()}');
-      }
-    }
-    report('conformance', {
-      'clips': expected.length,
-      'identical': identical,
-      'tokens_same': tokensSame,
-      'chunks': chunksAll,
-      'digest': hex(digest),
-      'gate_digest': hex(gateDigest),
-      'ms': DateTime.now().difference(clipsStart).inMilliseconds,
-      'bad': bad.take(6).toList(),
+      return raw.buffer.asFloat32List(raw.offsetInBytes, raw.lengthInBytes ~/ 4);
     });
+    report('conformance', r);
     expect(expected, hasLength(35));
-    expect(tokensSame, 35);
-    expect(identical, 35);
-    expect(hex(digest), hex(gateDigest));
+    expect(r['tokens_same'], 35);
+    expect(r['identical'], 35);
+    expect(r['digest'], r['gate_digest']);
 
     // ---- the accelerator: a take on auto starts its pipeline; the promotion is waited for, then a take on it ----
     final accel = File('${dir.path}/accelerator');
@@ -318,6 +222,14 @@ void main() {
       await Future<void>.delayed(const Duration(seconds: 45));
       final after = await client.diagnose();
       report('error_sent_window', {'last_error': after.lastError, 'waited_s': 45});
+    }
+
+    // the SDK's sharing settings over the app (files/e2e/settings present: a person or a screenshot looks at them)
+    final settings = File('${dir.path}/settings');
+    if (settings.existsSync()) {
+      await client.sharing.openSettings();
+      report('settings', {'shown': true, 'state_on': await client.sharing.isOn(), 'available': await client.sharing.isAvailable()});
+      await Future<void>.delayed(Duration(seconds: int.tryParse(settings.readAsStringSync().trim()) ?? 15));
     }
 
     await model.close();

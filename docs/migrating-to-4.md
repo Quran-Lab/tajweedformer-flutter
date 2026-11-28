@@ -91,8 +91,12 @@ answer to open (connect to continue).
 ## Sharing
 
 - **`audience` is removed** from `TajweedClientOptions`, with `TajweedAudience` and the `guardianConfirmed` argument
-  of `client.sharing.setOn`: delete the argument. Every app shows the same sharing sheet. Complying with children's
-  privacy law is the app's and the app store's.
+  of `client.sharing.setOn`: delete the argument. Every app shows the same sharing sheet, and every
+  learner is asked, whoever the app is for. The app chooses the sheet's wording (`setWording`), its colours
+  (`setTheme`) and its own moment to ask (`ask()`); a learner, or a parent through the app's own flow, can say "Not
+  now", turn sharing off or delete what was shared at any time. Complying with children's privacy law (for example
+  COPPA, the GDPR's rules for children, parental consent) is the developer's, through the app's own flows, its
+  privacy policy and its store declarations. Quran Lab never asks or guesses a learner's age.
 - **No developer switch,** as before. Every learner is asked, and the choice is theirs: "Not now", stop, or delete
   what they shared at any time. `flags.contributions` in the signed config is Quran Lab's own switch, for every app (a
   platform not offered yet, or an incident), never the app's.

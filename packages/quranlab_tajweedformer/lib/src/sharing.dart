@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'bridge.dart';
 import 'errors.dart';
+import 'host.dart';
 import 'messages.g.dart';
 
 /// Recitation sharing, reached through `client.sharing`.
@@ -23,7 +24,7 @@ import 'messages.g.dart';
 class TajweedSharing {
   TajweedSharing.internal();
 
-  TajweedHostApi get _api => Bridge.instance.api;
+  TajweedHost get _api => Bridge.instance.api;
 
   /// Sharing is offered on this device: false only while Quran Lab's own switch has it off. Offered is not consent.
   Future<bool> isAvailable() => guarded(() async => (await _api.sharingState()).available);

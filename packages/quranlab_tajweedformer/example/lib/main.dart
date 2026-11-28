@@ -1,15 +1,20 @@
-// The smallest screen around the four calls of every Quran Lab SDK, on Android and iOS: the model loading with
-// its download progress, "Play sample" (a sample clip, no microphone), "Recite" (the SDK's microphone), the tokens
-// as they come (tentative ones dimmed), "Stop", "Diagnose" and the sharing settings.
+// The smallest screen around the four calls of every Quran Lab SDK, on Android, iOS, Windows, Linux and the web:
+// the model loading with its download progress, "Play sample" (a sample clip, no microphone), "Recite" (the SDK's
+// microphone; on Windows and Linux the C SDK has none, and the button shows its runtime_unsupported), the tokens as
+// they come (tentative ones dimmed), "Stop", "Diagnose" and the sharing settings.
 //
-// Run it with a key made for this app's identifiers (ai.quranlab.tajweedformer.flutter.example):
+// Run it with a key made for this app's identifiers (ai.quranlab.tajweedformer.flutter.example; a desktop key on
+// Windows, Linux and the Mac, a web key on the web):
 //   flutter run --dart-define=QURANLAB_KEY=qlk_v1_...
+// On Windows (an app without a package identity) also the app id the desktop key is registered for:
+//   flutter run -d windows --dart-define=QURANLAB_KEY=qlk_v1_... --dart-define=QURANLAB_APP_ID=...
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:quranlab_tajweedformer/quranlab_tajweedformer.dart';
 
 const _key = String.fromEnvironment('QURANLAB_KEY');
+const _appId = String.fromEnvironment('QURANLAB_APP_ID');
 
 void main() => runApp(const ExampleApp());
 
@@ -70,7 +75,8 @@ class _ExampleScreenState extends State<ExampleScreen> with WidgetsBindingObserv
       return;
     }
     try {
-      final client = await TajweedClient.create(_key);
+      final client = await TajweedClient.create(_key,
+          options: TajweedClientOptions(appId: _appId.isEmpty ? null : _appId));
       setState(() {
         _client = client;
         _status = 'Loading the model';

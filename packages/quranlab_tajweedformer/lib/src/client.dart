@@ -16,14 +16,18 @@ class TajweedClientOptions {
   const TajweedClientOptions({this.appId, this.appVersion, this.storage});
 
   /// The app's id as registered at sdk.quranlab.ai. Null: the app's own (the package name on Android, the bundle
-  /// id on iOS).
+  /// id on iOS, the package family name of a packaged Windows app, the GTK application id on Linux). A
+  /// Windows app without a package identity passes it (else `invalid_argument`); the web does not use it (the web
+  /// key lists the site's origins).
   final String? appId;
 
-  /// The app's version. Null: the app's own.
+  /// The app's version. Null: the app's own (on Windows the program's ProductVersion; Linux has none to read).
   final String? appVersion;
 
   /// An absolute folder where the SDK keeps its files (the model, the signed config, the sharing queue). Null: the
-  /// platform's private folder. The folder is the SDK's to fill: a model it did not download itself is deleted.
+  /// platform's private folder. The folder is the SDK's to fill: a model it did not download itself is deleted. On
+  /// the web it is the web SDK's storage name instead (1 to 40 letters, digits, `.`, `_` or `-`): each name keeps its
+  /// own model and sharing queue in the browser.
   final String? storage;
 }
 
@@ -309,7 +313,8 @@ class TajweedDiagnosis {
   final String? context;
   final TajweedBackend? backend;
 
-  /// The microphone permission: `granted`, `denied` or `notAsked`.
+  /// The microphone permission: `granted`, `denied` or `notAsked`; `none` on Windows and Linux (the C SDK has no
+  /// microphone).
   final String microphone;
 
   /// The catalogue code of the last error the SDK raised in this process.

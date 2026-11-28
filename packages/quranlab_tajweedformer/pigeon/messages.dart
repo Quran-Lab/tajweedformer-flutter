@@ -1,4 +1,6 @@
-// The one interface between the Dart API and the two native SDKs (TajweedFormer for Android and for iOS).
+// The one interface between the Dart API and the native SDKs behind Pigeon's channels (TajweedFormer for Android, and
+// the Apple SDK for iOS). The web and the C SDK (Windows, Linux) answer the same interface in Dart
+// (lib/src/host.dart), with the same messages.
 //
 // After editing it, regenerate the three outputs from the package folder:
 //
@@ -6,7 +8,7 @@
 //
 // The Dart side (lib/src/) turns these messages into the public types. Nothing here is public API.
 //
-// Wire rules, the same on both platforms:
+// Wire rules, the same on every platform:
 // - Float samples and head values travel as little-endian float32 bytes (Uint8List): the platform channel codec
 //   has no float32 list that Pigeon can name, and a float64 copy of every head would double the bytes.
 // - The decoded layer travels as a delta: `tokenStart` and `frameStart` say from which index on the lists
